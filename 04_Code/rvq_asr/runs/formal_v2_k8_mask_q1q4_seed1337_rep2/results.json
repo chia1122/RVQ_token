@@ -1,0 +1,92 @@
+{
+  "mode": "standard",
+  "init_checkpoint": null,
+  "overfit_samples": 0,
+  "best_epoch": 1,
+  "num_rvq_layers": 4,
+  "active_rvq_layers": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "layer_fusion": "sum",
+  "normalized_layer_weights": [
+    0.25,
+    0.25,
+    0.25,
+    0.25
+  ],
+  "deterministic": true,
+  "selection_metric": "cer",
+  "ctc_loss_device": "cpu",
+  "codebook_size": 1024,
+  "test": {
+    "loss": 3.2905511772013787,
+    "wer": 1.0,
+    "cer": 1.0,
+    "reference_words": 5217,
+    "reference_characters": 23354,
+    "hypothesis_characters": 0,
+    "hypothesis_reference_length_ratio": 0.0,
+    "empty_hypothesis_ratio": 1.0,
+    "ctc_blank_frame_ratio": 1.0,
+    "wer_by_severity": {
+      "control": 1.0,
+      "moderate-to-severe": 1.0
+    },
+    "cer_by_severity": {
+      "control": 1.0,
+      "moderate-to-severe": 1.0
+    },
+    "wer_by_speaker": {
+      "FC03": 1.0,
+      "M05": 1.0,
+      "MC04": 1.0
+    },
+    "cer_by_speaker": {
+      "FC03": 1.0,
+      "M05": 1.0,
+      "MC04": 1.0
+    }
+  },
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 3.7514182886116116,
+      "valid": {
+        "loss": 3.3418654814768396,
+        "wer": 1.0,
+        "cer": 1.0,
+        "reference_words": 6540,
+        "reference_characters": 29336,
+        "hypothesis_characters": 0,
+        "hypothesis_reference_length_ratio": 0.0,
+        "empty_hypothesis_ratio": 1.0,
+        "ctc_blank_frame_ratio": 1.0,
+        "wer_by_severity": {
+          "control": 1.0,
+          "moderate": 1.0,
+          "severe": 1.0
+        },
+        "cer_by_severity": {
+          "control": 1.0,
+          "moderate": 1.0,
+          "severe": 1.0
+        },
+        "wer_by_speaker": {
+          "F03": 1.0,
+          "FC02": 1.0,
+          "M04": 1.0,
+          "MC03": 1.0
+        },
+        "cer_by_speaker": {
+          "F03": 1.0,
+          "FC02": 1.0,
+          "M04": 1.0,
+          "MC03": 1.0
+        }
+      }
+    }
+  ]
+}

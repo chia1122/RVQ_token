@@ -1,0 +1,41 @@
+{
+  "best_epoch": 1,
+  "num_rvq_layers": 4,
+  "codebook_size": 1024,
+  "test": {
+    "loss": 3.3978222802193896,
+    "wer": 1.0,
+    "reference_words": 5217,
+    "wer_by_severity": {
+      "control": 1.0,
+      "moderate-to-severe": 1.0
+    },
+    "wer_by_speaker": {
+      "FC03": 1.0,
+      "M05": 1.0,
+      "MC04": 1.0
+    }
+  },
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 3.634502524259908,
+      "valid": {
+        "loss": 3.4723896286906575,
+        "wer": 1.0,
+        "reference_words": 6540,
+        "wer_by_severity": {
+          "control": 1.0,
+          "moderate": 1.0,
+          "severe": 1.0
+        },
+        "wer_by_speaker": {
+          "F03": 1.0,
+          "FC02": 1.0,
+          "M04": 1.0,
+          "MC03": 1.0
+        }
+      }
+    }
+  ]
+}

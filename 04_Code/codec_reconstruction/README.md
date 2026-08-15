@@ -1,0 +1,220 @@
+# RVQ-prefix reconstruction and pretrained-ASR evaluation
+
+This experiment decodes EnCodec prefixes (`Q1`, `Q1:Q2`, `Q1:Q4`, `Q1:Q6`,
+`Q1:Q8`) to WAV and evaluates every condition with one fixed faster-whisper
+checkpoint and decoding configuration.
+
+The same workflow supports DAC. If DAC is the primary codec, use
+`reconstruct_dac_prefixes.py` and the DAC token root below; the pretrained-ASR
+evaluator is codec-independent.
+
+## DAC-first smoke test
+
+Confirm the completed DAC extraction and actual codebook count:
+
+```bash
+cat 04_Code/torgo_manifest/dac_tokens_24khz/extraction_summary.json
+```
+
+Then reconstruct one test utterance:
+
+```bash
+python 04_Code/codec_reconstruction/reconstruct_dac_prefixes.py \
+  --token-index 04_Code/torgo_manifest/dac_tokens_24khz/tokens.jsonl \
+  --token-root 04_Code/torgo_manifest/dac_tokens_24khz \
+  --manifest 04_Code/torgo_manifest/output/torgo_all.jsonl \
+  --audio-root /data/TORGO \
+  --output-dir 04_Code/codec_reconstruction/outputs/dac_smoke \
+  --layers 1,2,4,6,8 \
+  --model 24khz \
+  --split test \
+  --limit 1 \
+  --device cuda
+```
+
+Evaluate Original and all DAC prefixes with the same ASR:
+
+```bash
+python 04_Code/codec_reconstruction/evaluate_with_faster_whisper.py \
+  --manifest 04_Code/torgo_manifest/output/torgo_all.jsonl \
+  --audio-root /data/TORGO \
+  --reconstruction-index 04_Code/codec_reconstruction/outputs/dac_smoke/reconstruction_index.jsonl \
+  --reconstruction-root 04_Code/codec_reconstruction/outputs/dac_smoke \
+  --output-dir 04_Code/codec_reconstruction/asr_results/dac_smoke_large_v3 \
+  --conditions original,k1,k2,k4,k6,k8 \
+  --split test \
+  --limit-per-condition 1 \
+  --model large-v3 \
+  --language en \
+  --beam-size 5 \
+  --device cuda \
+  --compute-type float16
+```
+
+After the smoke test, remove `--limit`, change both smoke paths to a unique
+full-run directory (for example `outputs/dac_24khz`), and use `--split all`.
+
+## 1. Environment
+
+From the repository root on Linux:
+
+```bash
+python -c "import torch, torchaudio, encodec; print(torch.cuda.is_available())"
+python -c "import faster_whisper; print(faster_whisper.__file__)"
+```
+
+If needed, install `faster-whisper` in the server environment. Its first use
+may download the selected ASR checkpoint.
+
+## 2. One-utterance reconstruction smoke test
+
+```bash
+python 04_Code/codec_reconstruction/reconstruct_encodec_prefixes.py \
+  --token-index 04_Code/torgo_manifest/encodec_tokens_24khz_6kbps/tokens.jsonl \
+  --token-root 04_Code/torgo_manifest/encodec_tokens_24khz_6kbps \
+  --manifest 04_Code/torgo_manifest/output/torgo_all.jsonl \
+  --audio-root /data/TORGO \
+  --output-dir 04_Code/codec_reconstruction/outputs/encodec_smoke \
+  --layers 1,2,4,6,8 \
+  --split test \
+  --limit 1 \
+  --device cuda
+```
+
+The summary should report one utterance, five WAV files, and zero failures.
+Listen to or inspect every generated WAV before the full run. K1 is expected to
+sound coarser than K8, but every file must be non-empty and have approximately
+the source duration.
+
+## 3. Six-condition ASR smoke test
+
+```bash
+python 04_Code/codec_reconstruction/evaluate_with_faster_whisper.py \
+  --manifest 04_Code/torgo_manifest/output/torgo_all.jsonl \
+  --audio-root /data/TORGO \
+  --reconstruction-index 04_Code/codec_reconstruction/outputs/encodec_smoke/reconstruction_index.jsonl \
+  --reconstruction-root 04_Code/codec_reconstruction/outputs/encodec_smoke \
+  --output-dir 04_Code/codec_reconstruction/asr_results/encodec_smoke_large_v3 \
+  --conditions original,k1,k2,k4,k6,k8 \
+  --split test \
+  --limit-per-condition 1 \
+  --model large-v3 \
+  --language en \
+  --beam-size 5 \
+  --device cuda \
+  --compute-type float16
+```
+
+Keep `model`, `language`, `beam-size`, and text normalization fixed for all
+conditions. Use a new output directory if any of these settings change.
+
+## 4. Full reconstruction
+
+Use `--split all` to include every enrolled speaker and severity. This is valid
+for a frozen pretrained ASR evaluation because no TORGO samples train the ASR.
+
+```bash
+python 04_Code/codec_reconstruction/reconstruct_encodec_prefixes.py \
+  --token-index 04_Code/torgo_manifest/encodec_tokens_24khz_6kbps/tokens.jsonl \
+  --token-root 04_Code/torgo_manifest/encodec_tokens_24khz_6kbps \
+  --manifest 04_Code/torgo_manifest/output/torgo_all.jsonl \
+  --audio-root /data/TORGO \
+  --output-dir 04_Code/codec_reconstruction/outputs/encodec_24khz_6kbps \
+  --layers 1,2,4,6,8 \
+  --split all \
+  --device cuda
+```
+
+Expected output count is `7140 x 5 = 35700` WAV files. Rerunning the command
+reuses existing WAV files unless `--overwrite` is supplied.
+
+## 5. Full pretrained-ASR evaluation
+
+```bash
+python 04_Code/codec_reconstruction/evaluate_with_faster_whisper.py \
+  --manifest 04_Code/torgo_manifest/output/torgo_all.jsonl \
+  --audio-root /data/TORGO \
+  --reconstruction-index 04_Code/codec_reconstruction/outputs/encodec_24khz_6kbps/reconstruction_index.jsonl \
+  --reconstruction-root 04_Code/codec_reconstruction/outputs/encodec_24khz_6kbps \
+  --output-dir 04_Code/codec_reconstruction/asr_results/encodec_24khz_6kbps_large_v3 \
+  --conditions original,k1,k2,k4,k6,k8 \
+  --split all \
+  --model large-v3 \
+  --language en \
+  --beam-size 5 \
+  --device cuda \
+  --compute-type float16
+```
+
+The evaluator checkpoints `predictions.jsonl` every 100 items and resumes when
+the same command/output directory is used. `--overwrite` deliberately starts
+the ASR predictions again.
+
+Outputs:
+
+- `predictions.jsonl`: utterance-level reference, hypothesis, WER, and CER.
+- `summary.csv`: WER/CER grouped by condition, speaker, and severity.
+- `comparison_by_speaker.csv`: horizontal Original/K1/K2/K4/K6/K8 table.
+- `comparison_by_severity.csv`: horizontal condition comparison by severity.
+- `failures.jsonl`: failed items.
+- `experiment.json`: fixed ASR and decoding configuration.
+
+The primary comparison is within the same speaker/severity across `original`,
+`k1`, `k2`, `k4`, `k6`, and `k8`. This reconstructed-audio experiment is a
+complement to, not a replacement for, direct discrete-token probing.
+
+## Severe-speaker experiment and paired bootstrap
+
+Both reconstruction and ASR evaluation accept a comma-separated speaker
+filter. Reconstruct all enrolled Severe speakers:
+
+```bash
+python 04_Code/codec_reconstruction/reconstruct_dac_prefixes.py \
+  --token-index 04_Code/torgo_manifest/dac_tokens_24khz/tokens.jsonl \
+  --token-root 04_Code/torgo_manifest/dac_tokens_24khz \
+  --manifest 04_Code/torgo_manifest/output/torgo_all.jsonl \
+  --audio-root /data/TORGO \
+  --output-dir 04_Code/codec_reconstruction/outputs/dac_severe \
+  --layers 1,2,4,6,8 \
+  --model 24khz \
+  --split all \
+  --speakers F01,M01,M02,M04 \
+  --device cuda
+```
+
+Run the fixed pretrained ASR on Original and every prefix:
+
+```bash
+python 04_Code/codec_reconstruction/evaluate_with_faster_whisper.py \
+  --manifest 04_Code/torgo_manifest/output/torgo_all.jsonl \
+  --audio-root /data/TORGO \
+  --reconstruction-index 04_Code/codec_reconstruction/outputs/dac_severe/reconstruction_index.jsonl \
+  --reconstruction-root 04_Code/codec_reconstruction/outputs/dac_severe \
+  --output-dir 04_Code/codec_reconstruction/asr_results/dac_severe_large_v3 \
+  --conditions original,k1,k2,k4,k6,k8 \
+  --split all \
+  --speakers F01,M01,M02,M04 \
+  --model large-v3 \
+  --language en \
+  --beam-size 5 \
+  --device cuda \
+  --compute-type float16
+```
+
+Finally compare K4 and K8 with 10,000 paired utterance bootstrap samples per
+speaker:
+
+```bash
+python 04_Code/codec_reconstruction/paired_bootstrap.py \
+  --predictions 04_Code/codec_reconstruction/asr_results/dac_severe_large_v3/predictions.jsonl \
+  --condition-a k4 \
+  --condition-b k8 \
+  --samples 10000 \
+  --seed 1337 \
+  --output 04_Code/codec_reconstruction/asr_results/dac_severe_large_v3/k4_vs_k8_bootstrap.csv
+```
+
+The reported delta is `K8 - K4`; a negative value favors K8. A 95% confidence
+interval entirely below zero provides evidence that K8 improves that speaker.
+An interval entirely above zero favors K4. An interval spanning zero is
+inconclusive.

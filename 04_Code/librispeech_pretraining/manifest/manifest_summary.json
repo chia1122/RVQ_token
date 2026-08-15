@@ -1,0 +1,15 @@
+{
+  "audio_root": "/data/LibriSpeech",
+  "subsets": {
+    "train-clean-100": "train",
+    "dev-clean": "valid",
+    "test-clean": "test"
+  },
+  "utterances": 33862,
+  "speakers": 331,
+  "train": 28539,
+  "valid": 2703,
+  "test": 2620,
+  "failures": 0,
+  "transcript_source": "official *.trans.txt"
+}

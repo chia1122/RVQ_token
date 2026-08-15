@@ -1,0 +1,1148 @@
+{
+  "mode": "standard",
+  "overfit_samples": 0,
+  "best_epoch": 3,
+  "num_rvq_layers": 8,
+  "codebook_size": 1024,
+  "test": {
+    "loss": 2.9378948823478614,
+    "wer": 0.9986582327007859,
+    "cer": 0.897362336216494,
+    "reference_words": 5217,
+    "reference_characters": 23354,
+    "hypothesis_characters": 4170,
+    "hypothesis_reference_length_ratio": 0.17855613599383402,
+    "empty_hypothesis_ratio": 0.15139637432631065,
+    "ctc_blank_frame_ratio": 0.957542908762421,
+    "wer_by_severity": {
+      "control": 0.9987675622381069,
+      "moderate-to-severe": 0.9982758620689656
+    },
+    "cer_by_severity": {
+      "control": 0.88493195785777,
+      "moderate-to-severe": 0.9415204678362573
+    },
+    "wer_by_speaker": {
+      "FC03": 0.9987980769230769,
+      "M05": 0.9982758620689656,
+      "MC04": 0.9987187700192185
+    },
+    "cer_by_speaker": {
+      "FC03": 0.8778687066358299,
+      "M05": 0.9415204678362573,
+      "MC04": 0.8963047837295903
+    }
+  },
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 3.6104357289702524,
+      "valid": {
+        "loss": 3.2504350645532867,
+        "wer": 1.0,
+        "cer": 1.0,
+        "reference_words": 6540,
+        "reference_characters": 29336,
+        "hypothesis_characters": 0,
+        "hypothesis_reference_length_ratio": 0.0,
+        "empty_hypothesis_ratio": 1.0,
+        "ctc_blank_frame_ratio": 1.0,
+        "wer_by_severity": {
+          "control": 1.0,
+          "moderate": 1.0,
+          "severe": 1.0
+        },
+        "cer_by_severity": {
+          "control": 1.0,
+          "moderate": 1.0,
+          "severe": 1.0
+        },
+        "wer_by_speaker": {
+          "F03": 1.0,
+          "FC02": 1.0,
+          "M04": 1.0,
+          "MC03": 1.0
+        },
+        "cer_by_speaker": {
+          "F03": 1.0,
+          "FC02": 1.0,
+          "M04": 1.0,
+          "MC03": 1.0
+        }
+      }
+    },
+    {
+      "epoch": 2,
+      "train_loss": 3.0655426816978,
+      "valid": {
+        "loss": 3.2016095339556148,
+        "wer": 0.9996941896024465,
+        "cer": 0.988785110444505,
+        "reference_words": 6540,
+        "reference_characters": 29336,
+        "hypothesis_characters": 413,
+        "hypothesis_reference_length_ratio": 0.014078265612217072,
+        "empty_hypothesis_ratio": 0.8599221789883269,
+        "ctc_blank_frame_ratio": 0.9620952079851859,
+        "wer_by_severity": {
+          "control": 1.0,
+          "moderate": 0.9985632183908046,
+          "severe": 1.0
+        },
+        "cer_by_severity": {
+          "control": 0.9872813990461049,
+          "moderate": 0.9906572164948454,
+          "severe": 0.995
+        },
+        "wer_by_speaker": {
+          "F03": 0.9985632183908046,
+          "FC02": 1.0,
+          "M04": 1.0,
+          "MC03": 1.0
+        },
+        "cer_by_speaker": {
+          "F03": 0.9906572164948454,
+          "FC02": 0.9805999640740075,
+          "M04": 0.995,
+          "MC03": 0.9955525906159662
+        }
+      }
+    },
+    {
+      "epoch": 3,
+      "train_loss": 2.6261660940562312,
+      "valid": {
+        "loss": 3.0483665441260728,
+        "wer": 0.9957186544342508,
+        "cer": 0.8962707935642215,
+        "reference_words": 6540,
+        "reference_characters": 29336,
+        "hypothesis_characters": 5328,
+        "hypothesis_reference_length_ratio": 0.18161985274065995,
+        "empty_hypothesis_ratio": 0.1509727626459144,
+        "ctc_blank_frame_ratio": 0.9522943859807597,
+        "wer_by_severity": {
+          "control": 0.9950561797752809,
+          "moderate": 0.9971264367816092,
+          "severe": 0.997134670487106
+        },
+        "cer_by_severity": {
+          "control": 0.8857810015898251,
+          "moderate": 0.904639175257732,
+          "severe": 0.9493333333333334
+        },
+        "wer_by_speaker": {
+          "F03": 0.9971264367816092,
+          "FC02": 0.9930583911800736,
+          "M04": 0.997134670487106,
+          "MC03": 0.9975012493753124
+        },
+        "cer_by_speaker": {
+          "F03": 0.904639175257732,
+          "FC02": 0.8600682593856656,
+          "M04": 0.9493333333333334,
+          "MC03": 0.9176117411607738
+        }
+      }
+    },
+    {
+      "epoch": 4,
+      "train_loss": 2.123684883777332,
+      "valid": {
+        "loss": 2.959319518419555,
+        "wer": 0.998165137614679,
+        "cer": 0.8806585764930461,
+        "reference_words": 6540,
+        "reference_characters": 29336,
+        "hypothesis_characters": 6535,
+        "hypothesis_reference_length_ratio": 0.22276383965094082,
+        "empty_hypothesis_ratio": 0.06653696498054475,
+        "ctc_blank_frame_ratio": 0.9093875615374193,
+        "wer_by_severity": {
+          "control": 0.9979775280898876,
+          "moderate": 0.9985632183908046,
+          "severe": 0.998567335243553
+        },
+        "cer_by_severity": {
+          "control": 0.8791732909379968,
+          "moderate": 0.8748389175257731,
+          "severe": 0.9026666666666666
+        },
+        "wer_by_speaker": {
+          "F03": 0.9985632183908046,
+          "FC02": 0.9987750102082482,
+          "M04": 0.998567335243553,
+          "MC03": 0.9970014992503748
+        },
+        "cer_by_speaker": {
+          "F03": 0.8748389175257731,
+          "FC02": 0.8550386204418897,
+          "M04": 0.9026666666666666,
+          "MC03": 0.9090504780965087
+        }
+      }
+    },
+    {
+      "epoch": 5,
+      "train_loss": 1.7089965887691663,
+      "valid": {
+        "loss": 3.1354036287574916,
+        "wer": 0.9967889908256881,
+        "cer": 0.856728933733297,
+        "reference_words": 6540,
+        "reference_characters": 29336,
+        "hypothesis_characters": 6954,
+        "hypothesis_reference_length_ratio": 0.23704663212435234,
+        "empty_hypothesis_ratio": 0.06770428015564202,
+        "ctc_blank_frame_ratio": 0.9249074115893591,
+        "wer_by_severity": {
+          "control": 0.9970786516853932,
+          "moderate": 0.9964080459770115,
+          "severe": 0.995702005730659
+        },
+        "cer_by_severity": {
+          "control": 0.8539348171701113,
+          "moderate": 0.8521262886597938,
+          "severe": 0.885
+        },
+        "wer_by_speaker": {
+          "F03": 0.9964080459770115,
+          "FC02": 0.9971416904859126,
+          "M04": 0.995702005730659,
+          "MC03": 0.9970014992503748
+        },
+        "cer_by_speaker": {
+          "F03": 0.8521262886597938,
+          "FC02": 0.8318663553080654,
+          "M04": 0.885,
+          "MC03": 0.8812541694462975
+        }
+      }
+    },
+    {
+      "epoch": 6,
+      "train_loss": 1.38925311100106,
+      "valid": {
+        "loss": 3.400638492376424,
+        "wer": 0.9963302752293578,
+        "cer": 0.8368216525770384,
+        "reference_words": 6540,
+        "reference_characters": 29336,
+        "hypothesis_characters": 11338,
+        "hypothesis_reference_length_ratio": 0.38648759203708755,
+        "empty_hypothesis_ratio": 0.004280155642023347,
+        "ctc_blank_frame_ratio": 0.899902895081523,
+        "wer_by_severity": {
+          "control": 0.9950561797752809,
+          "moderate": 0.9992816091954023,
+          "severe": 0.998567335243553
+        },
+        "cer_by_severity": {
+          "control": 0.831081081081081,
+          "moderate": 0.8313466494845361,
+          "severe": 0.8866666666666667
+        },
+        "wer_by_speaker": {
+          "F03": 0.9992816091954023,
+          "FC02": 0.9934667211106574,
+          "M04": 0.998567335243553,
+          "MC03": 0.9970014992503748
+        },
+        "cer_by_speaker": {
+          "F03": 0.8313466494845361,
+          "FC02": 0.8079755703251302,
+          "M04": 0.8866666666666667,
+          "MC03": 0.8596842339337336
+        }
+      }
+    },
+    {
+      "epoch": 7,
+      "train_loss": 1.1708916977695796,
+      "valid": {
+        "loss": 3.524876682396529,
+        "wer": 0.9958715596330275,
+        "cer": 0.8335833106081265,
+        "reference_words": 6540,
+        "reference_characters": 29336,
+        "hypothesis_characters": 9880,
+        "hypothesis_reference_length_ratio": 0.33678756476683935,
+        "empty_hypothesis_ratio": 0.0031128404669260703,
+        "ctc_blank_frame_ratio": 0.9005973081613297,
+        "wer_by_severity": {
+          "control": 0.9948314606741573,
+          "moderate": 0.9949712643678161,
+          "severe": 1.004297994269341
+        },
+        "cer_by_severity": {
+          "control": 0.8300377583465819,
+          "moderate": 0.829735824742268,
+          "severe": 0.8653333333333333
+        },
+        "wer_by_speaker": {
+          "F03": 0.9949712643678161,
+          "FC02": 0.9951000408329931,
+          "M04": 1.004297994269341,
+          "MC03": 0.9945027486256871
+        },
+        "cer_by_speaker": {
+          "F03": 0.829735824742268,
+          "FC02": 0.8044727860607149,
+          "M04": 0.8653333333333333,
+          "MC03": 0.8616855681565488
+        }
+      }
+    },
+    {
+      "epoch": 8,
+      "train_loss": 1.0400458146063354,
+      "valid": {
+        "loss": 3.793114651919339,
+        "wer": 1.0345565749235475,
+        "cer": 0.8187892009817289,
+        "reference_words": 6540,
+        "reference_characters": 29336,
+        "hypothesis_characters": 13934,
+        "hypothesis_reference_length_ratio": 0.47497954731388053,
+        "empty_hypothesis_ratio": 0.0,
+        "ctc_blank_frame_ratio": 0.8571428571428571,
+        "wer_by_severity": {
+          "control": 1.047191011235955,
+          "moderate": 1.0093390804597702,
+          "severe": 1.004297994269341
+        },
+        "cer_by_severity": {
+          "control": 0.8101649443561209,
+          "moderate": 0.8145940721649485,
+          "severe": 0.8853333333333333
+        },
+        "wer_by_speaker": {
+          "F03": 1.0093390804597702,
+          "FC02": 1.0706410779910167,
+          "M04": 1.004297994269341,
+          "MC03": 1.0184907546226887
+        },
+        "cer_by_speaker": {
+          "F03": 0.8145940721649485,
+          "FC02": 0.7845338602478894,
+          "M04": 0.8853333333333333,
+          "MC03": 0.8418945963975984
+        }
+      }
+    },
+    {
+      "epoch": 9,
+      "train_loss": 0.9363239831545136,
+      "valid": {
+        "loss": 3.8270108335212973,
+        "wer": 1.024006116207951,
+        "cer": 0.8021543496045814,
+        "reference_words": 6540,
+        "reference_characters": 29336,
+        "hypothesis_characters": 12364,
+        "hypothesis_reference_length_ratio": 0.42146168530133626,
+        "empty_hypothesis_ratio": 0.0023346303501945525,
+        "ctc_blank_frame_ratio": 0.8798552459238517,
+        "wer_by_severity": {
+          "control": 1.0330337078651686,
+          "moderate": 1.0043103448275863,
+          "severe": 1.005730659025788
+        },
+        "cer_by_severity": {
+          "control": 0.792974960254372,
+          "moderate": 0.8039626288659794,
+          "severe": 0.86
+        },
+        "wer_by_speaker": {
+          "F03": 1.0043103448275863,
+          "FC02": 1.046549612086566,
+          "M04": 1.005730659025788,
+          "MC03": 1.0164917541229386
+        },
+        "cer_by_speaker": {
+          "F03": 0.8039626288659794,
+          "FC02": 0.7603736303215376,
+          "M04": 0.86,
+          "MC03": 0.8333333333333334
+        }
+      }
+    },
+    {
+      "epoch": 10,
+      "train_loss": 0.8711243016844092,
+      "valid": {
+        "loss": 3.9851778264175595,
+        "wer": 0.9977064220183486,
+        "cer": 0.8376738478320153,
+        "reference_words": 6540,
+        "reference_characters": 29336,
+        "hypothesis_characters": 10457,
+        "hypothesis_reference_length_ratio": 0.3564562312517044,
+        "empty_hypothesis_ratio": 0.0031128404669260703,
+        "ctc_blank_frame_ratio": 0.9131531999458019,
+        "wer_by_severity": {
+          "control": 0.9964044943820225,
+          "moderate": 0.9992816091954023,
+          "severe": 1.002865329512894
+        },
+        "cer_by_severity": {
+          "control": 0.828795707472178,
+          "moderate": 0.8377899484536082,
+          "severe": 0.897
+        },
+        "wer_by_speaker": {
+          "F03": 0.9992816091954023,
+          "FC02": 0.9967333605553287,
+          "M04": 1.002865329512894,
+          "MC03": 0.9960019990004998
+        },
+        "cer_by_speaker": {
+          "F03": 0.8377899484536082,
+          "FC02": 0.7984551823244117,
+          "M04": 0.897,
+          "MC03": 0.8663553480097843
+        }
+      }
+    },
+    {
+      "epoch": 11,
+      "train_loss": 0.8309327091292843,
+      "valid": {
+        "loss": 3.9292315711771004,
+        "wer": 1.012079510703364,
+        "cer": 0.8014725934006,
+        "reference_words": 6540,
+        "reference_characters": 29336,
+        "hypothesis_characters": 11643,
+        "hypothesis_reference_length_ratio": 0.39688437414780475,
+        "empty_hypothesis_ratio": 0.009727626459143969,
+        "ctc_blank_frame_ratio": 0.891485253601915,
+        "wer_by_severity": {
+          "control": 1.0155056179775281,
+          "moderate": 1.0021551724137931,
+          "severe": 1.010028653295129
+        },
+        "cer_by_severity": {
+          "control": 0.7919316375198728,
+          "moderate": 0.8023518041237113,
+          "severe": 0.8636666666666667
+        },
+        "wer_by_speaker": {
+          "F03": 1.0021551724137931,
+          "FC02": 1.023274806043283,
+          "M04": 1.010028653295129,
+          "MC03": 1.0059970014992503
+        },
+        "cer_by_speaker": {
+          "F03": 0.8023518041237113,
+          "FC02": 0.7542662116040956,
+          "M04": 0.8636666666666667,
+          "MC03": 0.8385590393595731
+        }
+      }
+    },
+    {
+      "epoch": 12,
+      "train_loss": 0.7945281816363011,
+      "valid": {
+        "loss": 4.139130038602807,
+        "wer": 1.0195718654434252,
+        "cer": 0.797313880556313,
+        "reference_words": 6540,
+        "reference_characters": 29336,
+        "hypothesis_characters": 13199,
+        "hypothesis_reference_length_ratio": 0.44992500681756203,
+        "empty_hypothesis_ratio": 0.0011673151750972762,
+        "ctc_blank_frame_ratio": 0.8822094756334402,
+        "wer_by_severity": {
+          "control": 1.0249438202247192,
+          "moderate": 1.0093390804597702,
+          "severe": 1.005730659025788
+        },
+        "cer_by_severity": {
+          "control": 0.7850258346581876,
+          "moderate": 0.8028350515463918,
+          "severe": 0.8683333333333333
+        },
+        "wer_by_speaker": {
+          "F03": 1.0093390804597702,
+          "FC02": 1.036749693752552,
+          "M04": 1.005730659025788,
+          "MC03": 1.0104947526236883
+        },
+        "cer_by_speaker": {
+          "F03": 0.8028350515463918,
+          "FC02": 0.7555236213400395,
+          "M04": 0.8683333333333333,
+          "MC03": 0.8215476984656438
+        }
+      }
+    },
+    {
+      "epoch": 13,
+      "train_loss": 0.7532466061367274,
+      "valid": {
+        "loss": 4.250031931019943,
+        "wer": 1.0235474006116208,
+        "cer": 0.7913144259612762,
+        "reference_words": 6540,
+        "reference_characters": 29336,
+        "hypothesis_characters": 12697,
+        "hypothesis_reference_length_ratio": 0.4328129260976275,
+        "empty_hypothesis_ratio": 0.005836575875486381,
+        "ctc_blank_frame_ratio": 0.885630730319317,
+        "wer_by_severity": {
+          "control": 1.0298876404494381,
+          "moderate": 1.0100574712643677,
+          "severe": 1.010028653295129
+        },
+        "cer_by_severity": {
+          "control": 0.7773748012718601,
+          "moderate": 0.7947809278350515,
+          "severe": 0.8776666666666667
+        },
+        "wer_by_speaker": {
+          "F03": 1.0100574712643677,
+          "FC02": 1.0396080032666395,
+          "M04": 1.010028653295129,
+          "MC03": 1.0179910044977512
+        },
+        "cer_by_speaker": {
+          "F03": 0.7947809278350515,
+          "FC02": 0.7449254535656548,
+          "M04": 0.8776666666666667,
+          "MC03": 0.8175450300200133
+        }
+      }
+    },
+    {
+      "epoch": 14,
+      "train_loss": 0.7422969802527545,
+      "valid": {
+        "loss": 4.161106905677439,
+        "wer": 0.9992354740061162,
+        "cer": 0.801949822743387,
+        "reference_words": 6540,
+        "reference_characters": 29336,
+        "hypothesis_characters": 12752,
+        "hypothesis_reference_length_ratio": 0.4346877556585765,
+        "empty_hypothesis_ratio": 0.0038910505836575876,
+        "ctc_blank_frame_ratio": 0.9053848064676392,
+        "wer_by_severity": {
+          "control": 0.9986516853932584,
+          "moderate": 0.9971264367816092,
+          "severe": 1.007163323782235
+        },
+        "cer_by_severity": {
+          "control": 0.782889507154213,
+          "moderate": 0.8107280927835051,
+          "severe": 0.9116666666666666
+        },
+        "wer_by_speaker": {
+          "F03": 0.9971264367816092,
+          "FC02": 1.0,
+          "M04": 1.007163323782235,
+          "MC03": 0.9970014992503748
+        },
+        "cer_by_speaker": {
+          "F03": 0.8107280927835051,
+          "FC02": 0.7486078677923478,
+          "M04": 0.9116666666666666,
+          "MC03": 0.8253279964420724
+        }
+      }
+    },
+    {
+      "epoch": 15,
+      "train_loss": 0.709906838268314,
+      "valid": {
+        "loss": 4.246774381654272,
+        "wer": 1.0207951070336392,
+        "cer": 0.753783746932097,
+        "reference_words": 6540,
+        "reference_characters": 29336,
+        "hypothesis_characters": 18233,
+        "hypothesis_reference_length_ratio": 0.6215230433596945,
+        "empty_hypothesis_ratio": 0.0015564202334630351,
+        "ctc_blank_frame_ratio": 0.8574138476130256,
+        "wer_by_severity": {
+          "control": 1.0274157303370786,
+          "moderate": 1.0114942528735633,
+          "severe": 0.997134670487106
+        },
+        "cer_by_severity": {
+          "control": 0.7351947535771065,
+          "moderate": 0.7688466494845361,
+          "severe": 0.8473333333333334
+        },
+        "wer_by_speaker": {
+          "F03": 1.0114942528735633,
+          "FC02": 1.0379746835443038,
+          "M04": 0.997134670487106,
+          "MC03": 1.0144927536231885
+        },
+        "cer_by_speaker": {
+          "F03": 0.7688466494845361,
+          "FC02": 0.7024429674869769,
+          "M04": 0.8473333333333334,
+          "MC03": 0.7757393818100956
+        }
+      }
+    },
+    {
+      "epoch": 16,
+      "train_loss": 0.6982935725729692,
+      "valid": {
+        "loss": 4.2782866653997145,
+        "wer": 1.0250764525993883,
+        "cer": 0.7820766293973275,
+        "reference_words": 6540,
+        "reference_characters": 29336,
+        "hypothesis_characters": 13726,
+        "hypothesis_reference_length_ratio": 0.46788928279247344,
+        "empty_hypothesis_ratio": 0.002723735408560311,
+        "ctc_blank_frame_ratio": 0.8831522966442347,
+        "wer_by_severity": {
+          "control": 1.0296629213483146,
+          "moderate": 1.0165229885057472,
+          "severe": 1.012893982808023
+        },
+        "cer_by_severity": {
+          "control": 0.7640600158982512,
+          "moderate": 0.7891430412371134,
+          "severe": 0.8883333333333333
+        },
+        "wer_by_speaker": {
+          "F03": 1.0165229885057472,
+          "FC02": 1.046549612086566,
+          "M04": 1.012893982808023,
+          "MC03": 1.0089955022488755
+        },
+        "cer_by_speaker": {
+          "F03": 0.7891430412371134,
+          "FC02": 0.7309143165079935,
+          "M04": 0.8883333333333333,
+          "MC03": 0.8050922837447188
+        }
+      }
+    },
+    {
+      "epoch": 17,
+      "train_loss": 0.6731658665211172,
+      "valid": {
+        "loss": 4.366553153184602,
+        "wer": 1.048776758409786,
+        "cer": 0.7729070084537769,
+        "reference_words": 6540,
+        "reference_characters": 29336,
+        "hypothesis_characters": 14482,
+        "hypothesis_reference_length_ratio": 0.49365966730297245,
+        "empty_hypothesis_ratio": 0.006614785992217899,
+        "ctc_blank_frame_ratio": 0.8716408472968701,
+        "wer_by_severity": {
+          "control": 1.0586516853932584,
+          "moderate": 1.028735632183908,
+          "severe": 1.0257879656160458
+        },
+        "cer_by_severity": {
+          "control": 0.7566573926868044,
+          "moderate": 0.7791559278350515,
+          "severe": 0.869
+        },
+        "wer_by_speaker": {
+          "F03": 1.028735632183908,
+          "FC02": 1.0755410371580236,
+          "M04": 1.0257879656160458,
+          "MC03": 1.0379810094952524
+        },
+        "cer_by_speaker": {
+          "F03": 0.7791559278350515,
+          "FC02": 0.7219328183941082,
+          "M04": 0.869,
+          "MC03": 0.7996442072492773
+        }
+      }
+    },
+    {
+      "epoch": 18,
+      "train_loss": 0.6562239534820692,
+      "valid": {
+        "loss": 4.275968591828291,
+        "wer": 1.0186544342507646,
+        "cer": 0.7790769020998091,
+        "reference_words": 6540,
+        "reference_characters": 29336,
+        "hypothesis_characters": 14830,
+        "hypothesis_reference_length_ratio": 0.5055222252522498,
+        "empty_hypothesis_ratio": 0.0011673151750972762,
+        "ctc_blank_frame_ratio": 0.8797479788627434,
+        "wer_by_severity": {
+          "control": 1.0231460674157304,
+          "moderate": 1.0057471264367817,
+          "severe": 1.015759312320917
+        },
+        "cer_by_severity": {
+          "control": 0.760383545310016,
+          "moderate": 0.7851159793814433,
+          "severe": 0.892
+        },
+        "wer_by_speaker": {
+          "F03": 1.0057471264367817,
+          "FC02": 1.032666394446713,
+          "M04": 1.015759312320917,
+          "MC03": 1.0114942528735633
+        },
+        "cer_by_speaker": {
+          "F03": 0.7851159793814433,
+          "FC02": 0.718968924016526,
+          "M04": 0.892,
+          "MC03": 0.8116522125861686
+        }
+      }
+    },
+    {
+      "epoch": 19,
+      "train_loss": 0.6480352449784857,
+      "valid": {
+        "loss": 4.568285590427627,
+        "wer": 1.0299694189602446,
+        "cer": 0.771509408235615,
+        "reference_words": 6540,
+        "reference_characters": 29336,
+        "hypothesis_characters": 14485,
+        "hypothesis_reference_length_ratio": 0.49376193073356967,
+        "empty_hypothesis_ratio": 0.0031128404669260703,
+        "ctc_blank_frame_ratio": 0.8772695451876609,
+        "wer_by_severity": {
+          "control": 1.0355056179775282,
+          "moderate": 1.0208333333333333,
+          "severe": 1.012893982808023
+        },
+        "cer_by_severity": {
+          "control": 0.7535274244833068,
+          "moderate": 0.7775451030927835,
+          "severe": 0.8796666666666667
+        },
+        "wer_by_speaker": {
+          "F03": 1.0208333333333333,
+          "FC02": 1.0440996325030625,
+          "M04": 1.012893982808023,
+          "MC03": 1.0249875062468765
+        },
+        "cer_by_speaker": {
+          "F03": 0.7775451030927835,
+          "FC02": 0.7181605891862762,
+          "M04": 0.8796666666666667,
+          "MC03": 0.7973093173226595
+        }
+      }
+    },
+    {
+      "epoch": 20,
+      "train_loss": 0.6116589673672409,
+      "valid": {
+        "loss": 4.578056585904689,
+        "wer": 1.0165137614678899,
+        "cer": 0.7479206435778566,
+        "reference_words": 6540,
+        "reference_characters": 29336,
+        "hypothesis_characters": 17180,
+        "hypothesis_reference_length_ratio": 0.5856285792200709,
+        "empty_hypothesis_ratio": 0.0023346303501945525,
+        "ctc_blank_frame_ratio": 0.866068605754031,
+        "wer_by_severity": {
+          "control": 1.0195505617977527,
+          "moderate": 1.0100574712643677,
+          "severe": 1.010028653295129
+        },
+        "cer_by_severity": {
+          "control": 0.7278914944356121,
+          "moderate": 0.7569265463917526,
+          "severe": 0.8636666666666667
+        },
+        "wer_by_speaker": {
+          "F03": 1.0100574712643677,
+          "FC02": 1.0261331155573703,
+          "M04": 1.010028653295129,
+          "MC03": 1.0114942528735633
+        },
+        "cer_by_speaker": {
+          "F03": 0.7569265463917526,
+          "FC02": 0.6945392491467577,
+          "M04": 0.8636666666666667,
+          "MC03": 0.7691794529686458
+        }
+      }
+    },
+    {
+      "epoch": 21,
+      "train_loss": 0.6161737260422504,
+      "valid": {
+        "loss": 4.336771897641137,
+        "wer": 1.0177370030581039,
+        "cer": 0.7712026179438233,
+        "reference_words": 6540,
+        "reference_characters": 29336,
+        "hypothesis_characters": 15458,
+        "hypothesis_reference_length_ratio": 0.5269293700572675,
+        "empty_hypothesis_ratio": 0.0003891050583657588,
+        "ctc_blank_frame_ratio": 0.876473510681541,
+        "wer_by_severity": {
+          "control": 1.0208988764044944,
+          "moderate": 1.0100574712643677,
+          "severe": 1.012893982808023
+        },
+        "cer_by_severity": {
+          "control": 0.7499006359300477,
+          "moderate": 0.7818943298969072,
+          "severe": 0.892
+        },
+        "wer_by_speaker": {
+          "F03": 1.0100574712643677,
+          "FC02": 1.0240914659044509,
+          "M04": 1.012893982808023,
+          "MC03": 1.016991504247876
+        },
+        "cer_by_speaker": {
+          "F03": 0.7818943298969072,
+          "FC02": 0.7150170648464164,
+          "M04": 0.892,
+          "MC03": 0.7930842784078275
+        }
+      }
+    },
+    {
+      "epoch": 22,
+      "train_loss": 0.5936009509233102,
+      "valid": {
+        "loss": 4.516595830249416,
+        "wer": 1.034250764525994,
+        "cer": 0.768714207799291,
+        "reference_words": 6540,
+        "reference_characters": 29336,
+        "hypothesis_characters": 16275,
+        "hypothesis_reference_length_ratio": 0.5547791109899101,
+        "empty_hypothesis_ratio": 0.0031128404669260703,
+        "ctc_blank_frame_ratio": 0.8653290275958628,
+        "wer_by_severity": {
+          "control": 1.04,
+          "moderate": 1.0201149425287357,
+          "severe": 1.0257879656160458
+        },
+        "cer_by_severity": {
+          "control": 0.75,
+          "moderate": 0.7709407216494846,
+          "severe": 0.8896666666666667
+        },
+        "wer_by_speaker": {
+          "F03": 1.0201149425287357,
+          "FC02": 1.060024499795835,
+          "M04": 1.0257879656160458,
+          "MC03": 1.0154922538730635
+        },
+        "cer_by_speaker": {
+          "F03": 0.7709407216494846,
+          "FC02": 0.7142087300161667,
+          "M04": 0.8896666666666667,
+          "MC03": 0.7943073159884367
+        }
+      }
+    },
+    {
+      "epoch": 23,
+      "train_loss": 0.5892975599965147,
+      "valid": {
+        "loss": 4.4132619964473445,
+        "wer": 1.0204892966360857,
+        "cer": 0.7570561767112081,
+        "reference_words": 6540,
+        "reference_characters": 29336,
+        "hypothesis_characters": 15258,
+        "hypothesis_reference_length_ratio": 0.5201118080174529,
+        "empty_hypothesis_ratio": 0.0031128404669260703,
+        "ctc_blank_frame_ratio": 0.8779187931891062,
+        "wer_by_severity": {
+          "control": 1.0247191011235954,
+          "moderate": 1.0122126436781609,
+          "severe": 1.010028653295129
+        },
+        "cer_by_severity": {
+          "control": 0.7388215421303657,
+          "moderate": 0.765625,
+          "severe": 0.8616666666666667
+        },
+        "wer_by_speaker": {
+          "F03": 1.0122126436781609,
+          "FC02": 1.0269497754185382,
+          "M04": 1.010028653295129,
+          "MC03": 1.0219890054972514
+        },
+        "cer_by_speaker": {
+          "F03": 0.765625,
+          "FC02": 0.703610562241782,
+          "M04": 0.8616666666666667,
+          "MC03": 0.7824104958861463
+        }
+      }
+    },
+    {
+      "epoch": 24,
+      "train_loss": 0.5583950005041476,
+      "valid": {
+        "loss": 4.500268876355446,
+        "wer": 1.0339449541284405,
+        "cer": 0.7514998636487592,
+        "reference_words": 6540,
+        "reference_characters": 29336,
+        "hypothesis_characters": 16774,
+        "hypothesis_reference_length_ratio": 0.5717889282792473,
+        "empty_hypothesis_ratio": 0.005836575875486381,
+        "ctc_blank_frame_ratio": 0.8614166026828056,
+        "wer_by_severity": {
+          "control": 1.041123595505618,
+          "moderate": 1.019396551724138,
+          "severe": 1.0171919770773639
+        },
+        "cer_by_severity": {
+          "control": 0.7279908585055644,
+          "moderate": 0.7682023195876289,
+          "severe": 0.8746666666666667
+        },
+        "wer_by_speaker": {
+          "F03": 1.019396551724138,
+          "FC02": 1.0579828501429154,
+          "M04": 1.0171919770773639,
+          "MC03": 1.0204897551224388
+        },
+        "cer_by_speaker": {
+          "F03": 0.7682023195876289,
+          "FC02": 0.6948985090713131,
+          "M04": 0.8746666666666667,
+          "MC03": 0.7689570824994441
+        }
+      }
+    },
+    {
+      "epoch": 25,
+      "train_loss": 0.5439947811271462,
+      "valid": {
+        "loss": 4.655132363649658,
+        "wer": 1.03914373088685,
+        "cer": 0.7410008181074448,
+        "reference_words": 6540,
+        "reference_characters": 29336,
+        "hypothesis_characters": 18494,
+        "hypothesis_reference_length_ratio": 0.6304199618216526,
+        "empty_hypothesis_ratio": 0.0038910505836575876,
+        "ctc_blank_frame_ratio": 0.8533546361952938,
+        "wer_by_severity": {
+          "control": 1.0485393258426967,
+          "moderate": 1.0172413793103448,
+          "severe": 1.0229226361031518
+        },
+        "cer_by_severity": {
+          "control": 0.7202901430842608,
+          "moderate": 0.754993556701031,
+          "severe": 0.851
+        },
+        "wer_by_speaker": {
+          "F03": 1.0172413793103448,
+          "FC02": 1.0608411596570029,
+          "M04": 1.0229226361031518,
+          "MC03": 1.0334832583708147
+        },
+        "cer_by_speaker": {
+          "F03": 0.754993556701031,
+          "FC02": 0.6895096102029818,
+          "M04": 0.851,
+          "MC03": 0.7583944852123637
+        }
+      }
+    },
+    {
+      "epoch": 26,
+      "train_loss": 0.5244022739273975,
+      "valid": {
+        "loss": 4.7279188042020985,
+        "wer": 1.0180428134556574,
+        "cer": 0.7430801745295882,
+        "reference_words": 6540,
+        "reference_characters": 29336,
+        "hypothesis_characters": 17442,
+        "hypothesis_reference_length_ratio": 0.594559585492228,
+        "empty_hypothesis_ratio": 0.005447470817120622,
+        "ctc_blank_frame_ratio": 0.8665089652680548,
+        "wer_by_severity": {
+          "control": 1.0215730337078652,
+          "moderate": 1.0100574712643677,
+          "severe": 1.011461318051576
+        },
+        "cer_by_severity": {
+          "control": 0.7228239268680445,
+          "moderate": 0.7537048969072165,
+          "severe": 0.857
+        },
+        "wer_by_speaker": {
+          "F03": 1.0100574712643677,
+          "FC02": 1.0212331563903634,
+          "M04": 1.011461318051576,
+          "MC03": 1.0219890054972514
+        },
+        "cer_by_speaker": {
+          "F03": 0.7537048969072165,
+          "FC02": 0.6821447817495958,
+          "M04": 0.857,
+          "MC03": 0.7731821214142762
+        }
+      }
+    },
+    {
+      "epoch": 27,
+      "train_loss": 0.5169139821088795,
+      "valid": {
+        "loss": 4.791232002106158,
+        "wer": 1.0406727828746178,
+        "cer": 0.7338423779656394,
+        "reference_words": 6540,
+        "reference_characters": 29336,
+        "hypothesis_characters": 20003,
+        "hypothesis_reference_length_ratio": 0.6818584674120535,
+        "empty_hypothesis_ratio": 0.0015564202334630351,
+        "ctc_blank_frame_ratio": 0.8401777245833522,
+        "wer_by_severity": {
+          "control": 1.0465168539325842,
+          "moderate": 1.0258620689655173,
+          "severe": 1.0329512893982808
+        },
+        "cer_by_severity": {
+          "control": 0.7130862480127186,
+          "moderate": 0.7490335051546392,
+          "severe": 0.8416666666666667
+        },
+        "wer_by_speaker": {
+          "F03": 1.0258620689655173,
+          "FC02": 1.0477746018783176,
+          "M04": 1.0329512893982808,
+          "MC03": 1.0449775112443778
+        },
+        "cer_by_speaker": {
+          "F03": 0.7490335051546392,
+          "FC02": 0.6813364469193461,
+          "M04": 0.8416666666666667,
+          "MC03": 0.7523904825439182
+        }
+      }
+    },
+    {
+      "epoch": 28,
+      "train_loss": 0.4965630239241098,
+      "valid": {
+        "loss": 4.7262853443767545,
+        "wer": 1.024617737003058,
+        "cer": 0.7438301063539678,
+        "reference_words": 6540,
+        "reference_characters": 29336,
+        "hypothesis_characters": 18389,
+        "hypothesis_reference_length_ratio": 0.6268407417507499,
+        "empty_hypothesis_ratio": 0.0007782101167315176,
+        "ctc_blank_frame_ratio": 0.8562903662887855,
+        "wer_by_severity": {
+          "control": 1.030112359550562,
+          "moderate": 1.0114942528735633,
+          "severe": 1.015759312320917
+        },
+        "cer_by_severity": {
+          "control": 0.7201410969793323,
+          "moderate": 0.754993556701031,
+          "severe": 0.8796666666666667
+        },
+        "wer_by_speaker": {
+          "F03": 1.0114942528735633,
+          "FC02": 1.0261331155573703,
+          "M04": 1.015759312320917,
+          "MC03": 1.0349825087456272
+        },
+        "cer_by_speaker": {
+          "F03": 0.754993556701031,
+          "FC02": 0.6897790551463984,
+          "M04": 0.8796666666666667,
+          "MC03": 0.7577273738047587
+        }
+      }
+    },
+    {
+      "epoch": 29,
+      "train_loss": 0.465010260291335,
+      "valid": {
+        "loss": 4.745367540853961,
+        "wer": 1.0186544342507646,
+        "cer": 0.7372511589855467,
+        "reference_words": 6540,
+        "reference_characters": 29336,
+        "hypothesis_characters": 17404,
+        "hypothesis_reference_length_ratio": 0.5932642487046632,
+        "empty_hypothesis_ratio": 0.0019455252918287938,
+        "ctc_blank_frame_ratio": 0.8654250033873809,
+        "wer_by_severity": {
+          "control": 1.0217977528089888,
+          "moderate": 1.0136494252873562,
+          "severe": 1.008595988538682
+        },
+        "cer_by_severity": {
+          "control": 0.7125894276629571,
+          "moderate": 0.7528994845360825,
+          "severe": 0.8703333333333333
+        },
+        "wer_by_speaker": {
+          "F03": 1.0136494252873562,
+          "FC02": 1.0204164965291955,
+          "M04": 1.008595988538682,
+          "MC03": 1.023488255872064
+        },
+        "cer_by_speaker": {
+          "F03": 0.7528994845360825,
+          "FC02": 0.6772049577869589,
+          "M04": 0.8703333333333333,
+          "MC03": 0.7563931509895486
+        }
+      }
+    },
+    {
+      "epoch": 30,
+      "train_loss": 0.45690418449957515,
+      "valid": {
+        "loss": 4.730409812532974,
+        "wer": 1.0555045871559634,
+        "cer": 0.7380351786201255,
+        "reference_words": 6540,
+        "reference_characters": 29336,
+        "hypothesis_characters": 19310,
+        "hypothesis_reference_length_ratio": 0.658235614944096,
+        "empty_hypothesis_ratio": 0.002723735408560311,
+        "ctc_blank_frame_ratio": 0.8445474459148187,
+        "wer_by_severity": {
+          "control": 1.0653932584269663,
+          "moderate": 1.0387931034482758,
+          "severe": 1.0257879656160458
+        },
+        "cer_by_severity": {
+          "control": 0.7155703497615262,
+          "moderate": 0.7475837628865979,
+          "severe": 0.869
+        },
+        "wer_by_speaker": {
+          "F03": 1.0387931034482758,
+          "FC02": 1.0820743160473663,
+          "M04": 1.0257879656160458,
+          "MC03": 1.0449775112443778
+        },
+        "cer_by_speaker": {
+          "F03": 0.7475837628865979,
+          "FC02": 0.686366085863122,
+          "M04": 0.869,
+          "MC03": 0.751723371136313
+        }
+      }
+    }
+  ]
+}

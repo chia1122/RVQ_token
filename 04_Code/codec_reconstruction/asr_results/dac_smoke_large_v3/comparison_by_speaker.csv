@@ -1,0 +1,2 @@
+﻿speaker_id,severity,original_wer,original_cer,k1_wer,k1_cer,k2_wer,k2_cer,k4_wer,k4_cer,k6_wer,k6_cer,k8_wer,k8_cer
+FC03,control,1.0,0.25,1.0,0.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0

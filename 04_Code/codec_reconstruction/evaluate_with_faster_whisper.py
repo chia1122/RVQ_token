@@ -1,0 +1,259 @@
+#!/usr/bin/env python3
+"""Evaluate original and RVQ-prefix reconstructed audio with one ASR model."""
+
+from __future__ import annotations
+
+import argparse
+import csv
+import json
+import re
+import unicodedata
+from collections import defaultdict
+from pathlib import Path
+
+
+def normalize_text(text: str) -> str:
+    text = unicodedata.normalize("NFKC", text).upper()
+    text = text.replace("’", "'").replace("‘", "'").replace("`", "'").replace("-", " ")
+    text = re.sub(r"[^A-Z' ]+", " ", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def edit_distance(reference: list[str], hypothesis: list[str]) -> int:
+    previous = list(range(len(hypothesis) + 1))
+    for ref_index, ref_item in enumerate(reference, start=1):
+        current = [ref_index]
+        for hyp_index, hyp_item in enumerate(hypothesis, start=1):
+            current.append(min(
+                current[-1] + 1,
+                previous[hyp_index] + 1,
+                previous[hyp_index - 1] + (ref_item != hyp_item),
+            ))
+        previous = current
+    return previous[-1]
+
+
+class Scores:
+    def __init__(self):
+        self.word_edits = self.words = self.char_edits = self.chars = 0
+
+    def update(self, reference: str, hypothesis: str) -> None:
+        ref_words, hyp_words = reference.split(), hypothesis.split()
+        ref_chars, hyp_chars = list(reference.replace(" ", "")), list(hypothesis.replace(" ", ""))
+        self.word_edits += edit_distance(ref_words, hyp_words)
+        self.words += len(ref_words)
+        self.char_edits += edit_distance(ref_chars, hyp_chars)
+        self.chars += len(ref_chars)
+
+    def row(self) -> dict:
+        return {
+            "utterances": getattr(self, "utterances", 0),
+            "reference_words": self.words,
+            "word_edits": self.word_edits,
+            "wer": self.word_edits / self.words if self.words else 0.0,
+            "reference_characters": self.chars,
+            "character_edits": self.char_edits,
+            "cer": self.char_edits / self.chars if self.chars else 0.0,
+        }
+
+
+def load_jsonl(path: Path) -> list[dict]:
+    with path.open(encoding="utf-8") as handle:
+        return [json.loads(line) for line in handle if line.strip()]
+
+
+def build_items(args: argparse.Namespace) -> list[dict]:
+    conditions = {item.strip() for item in args.conditions.split(",") if item.strip()}
+    speakers = {item.strip() for item in args.speakers.split(",") if item.strip()}
+    manifest = load_jsonl(args.manifest)
+    items = []
+    if "original" in conditions:
+        for row in manifest:
+            if args.split != "all" and row["split"] != args.split:
+                continue
+            if speakers and row["speaker_id"] not in speakers:
+                continue
+            items.append({
+                "condition": "original", "utt_id": row["utt_id"],
+                "audio": args.audio_root / row["audio_path"],
+                "speaker_id": row["speaker_id"], "severity": row["severity"],
+                "split": row["split"], "reference": row["text_norm"],
+            })
+    for row in load_jsonl(args.reconstruction_index):
+        if row["condition"] not in conditions:
+            continue
+        if args.split != "all" and row["split"] != args.split:
+            continue
+        if speakers and row["speaker_id"] not in speakers:
+            continue
+        items.append({
+            "condition": row["condition"], "utt_id": row["utt_id"],
+            "audio": args.reconstruction_root / row["audio_path"],
+            "speaker_id": row["speaker_id"], "severity": row["severity"],
+            "split": row["split"], "reference": row["text_norm"],
+        })
+    if not items:
+        raise ValueError("No evaluation items matched the requested conditions/split")
+    if args.limit_per_condition:
+        counts = defaultdict(int)
+        limited = []
+        for item in items:
+            if counts[item["condition"]] >= args.limit_per_condition:
+                continue
+            limited.append(item)
+            counts[item["condition"]] += 1
+        items = limited
+    return items
+
+
+def write_jsonl(path: Path, rows: list[dict]) -> None:
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    with temporary.open("w", encoding="utf-8", newline="\n") as handle:
+        for row in rows:
+            handle.write(json.dumps(row, ensure_ascii=True, sort_keys=True) + "\n")
+    temporary.replace(path)
+
+
+def evaluate(args: argparse.Namespace) -> None:
+    try:
+        from faster_whisper import WhisperModel
+    except ImportError as exc:
+        raise SystemExit("Install `faster-whisper` before ASR evaluation") from exc
+
+    items = build_items(args)
+    args.output_dir.mkdir(parents=True, exist_ok=True)
+    model = WhisperModel(args.model, device=args.device, compute_type=args.compute_type)
+    predictions_path = args.output_dir / "predictions.jsonl"
+    predictions = [] if args.overwrite or not predictions_path.is_file() else load_jsonl(predictions_path)
+    completed = {(row["condition"], row["utt_id"]) for row in predictions}
+    failures = []
+    for index, item in enumerate(items, start=1):
+        if (item["condition"], item["utt_id"]) in completed:
+            continue
+        try:
+            segments, _ = model.transcribe(
+                str(item["audio"]), language=args.language,
+                beam_size=args.beam_size, temperature=0.0,
+                condition_on_previous_text=False,
+            )
+            raw_hypothesis = " ".join(segment.text.strip() for segment in segments).strip()
+            hypothesis = normalize_text(raw_hypothesis)
+            reference = normalize_text(item["reference"])
+            word_edits = edit_distance(reference.split(), hypothesis.split())
+            ref_chars = list(reference.replace(" ", ""))
+            char_edits = edit_distance(ref_chars, list(hypothesis.replace(" ", "")))
+            predictions.append({
+                "condition": item["condition"], "utt_id": item["utt_id"],
+                "speaker_id": item["speaker_id"], "severity": item["severity"],
+                "split": item["split"], "reference": reference,
+                "hypothesis": hypothesis, "raw_hypothesis": raw_hypothesis,
+                "word_edits": word_edits, "reference_words": len(reference.split()),
+                "wer": word_edits / len(reference.split()),
+                "character_edits": char_edits, "reference_characters": len(ref_chars),
+                "cer": char_edits / len(ref_chars),
+            })
+            completed.add((item["condition"], item["utt_id"]))
+        except Exception as exc:
+            failures.append({
+                "condition": item["condition"], "utt_id": item["utt_id"],
+                "error": f"{type(exc).__name__}: {exc}",
+            })
+            if not args.skip_errors:
+                raise
+        if index % args.log_every == 0 or index == len(items):
+            write_jsonl(predictions_path, predictions)
+            print(f"Processed {index}/{len(items)}; predictions={len(predictions)}; failures={len(failures)}")
+
+    write_jsonl(predictions_path, predictions)
+    write_jsonl(args.output_dir / "failures.jsonl", failures)
+    if not predictions:
+        raise RuntimeError("No successful ASR predictions were produced")
+
+    groups = defaultdict(Scores)
+    for row in predictions:
+        for group_type, group_value in (
+            ("overall", "all"), ("speaker", row["speaker_id"]),
+            ("severity", row["severity"]),
+        ):
+            key = (row["condition"], group_type, group_value)
+            groups[key].update(row["reference"], row["hypothesis"])
+            groups[key].utterances = getattr(groups[key], "utterances", 0) + 1
+    summary_rows = []
+    for (condition, group_type, group_value), scores in sorted(groups.items()):
+        summary_rows.append({
+            "condition": condition, "group_type": group_type,
+            "group_value": group_value, **scores.row(),
+        })
+    with (args.output_dir / "summary.csv").open("w", encoding="utf-8-sig", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=list(summary_rows[0]))
+        writer.writeheader()
+        writer.writerows(summary_rows)
+
+    condition_order = [item for item in ("original", "k1", "k2", "k4", "k6", "k8") if any(
+        row["condition"] == item for row in predictions
+    )]
+    speaker_severity = {row["speaker_id"]: row["severity"] for row in predictions}
+    for group_type, filename, identity_name in (
+        ("speaker", "comparison_by_speaker.csv", "speaker_id"),
+        ("severity", "comparison_by_severity.csv", "severity"),
+    ):
+        group_values = sorted({
+            group_value for _, current_type, group_value in groups
+            if current_type == group_type
+        })
+        comparison = []
+        for group_value in group_values:
+            comparison_row = {identity_name: group_value}
+            if group_type == "speaker":
+                comparison_row["severity"] = speaker_severity[group_value]
+            for condition in condition_order:
+                scores = groups.get((condition, group_type, group_value))
+                comparison_row[f"{condition}_wer"] = scores.row()["wer"] if scores else ""
+                comparison_row[f"{condition}_cer"] = scores.row()["cer"] if scores else ""
+            comparison.append(comparison_row)
+        with (args.output_dir / filename).open("w", encoding="utf-8-sig", newline="") as handle:
+            writer = csv.DictWriter(handle, fieldnames=list(comparison[0]))
+            writer.writeheader()
+            writer.writerows(comparison)
+    experiment = {
+        "asr_model": args.model, "device": args.device,
+        "compute_type": args.compute_type, "language": args.language,
+        "beam_size": args.beam_size, "conditions": args.conditions,
+        "split": args.split, "items": len(items),
+        "predictions": len(predictions), "failures": len(failures),
+    }
+    (args.output_dir / "experiment.json").write_text(
+        json.dumps(experiment, indent=2) + "\n", encoding="utf-8"
+    )
+    print(json.dumps(experiment, indent=2))
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--manifest", type=Path, required=True)
+    parser.add_argument("--audio-root", type=Path, required=True)
+    parser.add_argument("--reconstruction-index", type=Path, required=True)
+    parser.add_argument("--reconstruction-root", type=Path, required=True)
+    parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("--conditions", default="original,k1,k2,k4,k6,k8")
+    parser.add_argument("--split", choices=("all", "train", "valid", "test"), default="all")
+    parser.add_argument("--speakers", default="", help="Optional comma-separated speaker IDs")
+    parser.add_argument("--model", default="large-v3")
+    parser.add_argument("--device", default="cuda")
+    parser.add_argument("--compute-type", default="float16")
+    parser.add_argument("--language", default="en")
+    parser.add_argument("--beam-size", type=int, default=5)
+    parser.add_argument("--skip-errors", action="store_true")
+    parser.add_argument("--log-every", type=int, default=100)
+    parser.add_argument("--limit-per-condition", type=int, default=0)
+    parser.add_argument("--overwrite", action="store_true")
+    args = parser.parse_args()
+    if args.beam_size < 1 or args.log_every < 1:
+        parser.error("--beam-size and --log-every must be positive")
+    if args.limit_per_condition < 0:
+        parser.error("--limit-per-condition cannot be negative")
+    return args
+
+
+if __name__ == "__main__":
+    evaluate(parse_args())

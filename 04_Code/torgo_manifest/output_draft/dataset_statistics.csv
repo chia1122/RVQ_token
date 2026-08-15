@@ -1,0 +1,5 @@
+﻿split,speakers,utterances,hours,missing_audio,dysarthric_speakers,control_speakers,mild_speakers,moderate_speakers,moderate_to_severe_speakers,severe_speakers,unknown_severity_speakers
+train,6,2529,2.3027,0,3,3,0,0,0,3,0
+valid,4,2570,1.9547,0,2,2,0,1,0,1,0
+test,3,2041,1.6502,0,1,2,0,0,1,0,0
+all,13,7140,5.9076,0,6,7,0,1,1,4,0

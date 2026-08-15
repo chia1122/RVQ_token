@@ -1,0 +1,12 @@
+{
+  "asr_model": "large-v3",
+  "device": "cuda",
+  "compute_type": "float16",
+  "language": "en",
+  "beam_size": 5,
+  "conditions": "original,k1,k2,k4,k6,k8",
+  "split": "all",
+  "items": 119,
+  "predictions": 119,
+  "failures": 0
+}

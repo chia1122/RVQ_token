@@ -1,0 +1,100 @@
+{"utt_id": "F01-Session1-headMic-0062", "speaker_id": "F01", "severity": "severe", "reference": "SIP", "hypothesis": "SIP"}
+{"utt_id": "F01-Session1-headMic-0085", "speaker_id": "F01", "severity": "severe", "reference": "SIP", "hypothesis": "SIP"}
+{"utt_id": "F01-Session1-headMic-0088", "speaker_id": "F01", "severity": "severe", "reference": "LEFT", "hypothesis": "LEFT"}
+{"utt_id": "F01-Session1-headMic-0119", "speaker_id": "F01", "severity": "severe", "reference": "RAIN", "hypothesis": "RAIN"}
+{"utt_id": "FC01-Session1-headMic-0072", "speaker_id": "FC01", "severity": "control", "reference": "HE DRESSES HIMSELF IN AN ANCIENT BLACK FROCK COAT", "hypothesis": "HE DRESSES HIMSELF IN AN ANCIENT BLACK FROCK COAT"}
+{"utt_id": "FC01-Session1-headMic-0077", "speaker_id": "FC01", "severity": "control", "reference": "BUT HE ALWAYS ANSWERS BANANA OIL", "hypothesis": "BUT HE ALWAYS ANSWERS BANANA OIL"}
+{"utt_id": "FC01-Session1-headMic-0086", "speaker_id": "FC01", "severity": "control", "reference": "FOR", "hypothesis": "FOR"}
+{"utt_id": "FC01-Session1-headMic-0107", "speaker_id": "FC01", "severity": "control", "reference": "GADGET", "hypothesis": "GADGET"}
+{"utt_id": "FC01-Session1-headMic-0121", "speaker_id": "FC01", "severity": "control", "reference": "SHEET", "hypothesis": "SHEET"}
+{"utt_id": "FC01-Session1-headMic-0122", "speaker_id": "FC01", "severity": "control", "reference": "ONE", "hypothesis": "ONE"}
+{"utt_id": "FC01-Session1-headMic-0145", "speaker_id": "FC01", "severity": "control", "reference": "WHOOP", "hypothesis": "WHOOP"}
+{"utt_id": "M01-Session1-headMic-0011", "speaker_id": "M01", "severity": "severe", "reference": "EXCEPT IN THE WINTER WHEN THE OOZE OR SNOW OR ICE PREVENTS", "hypothesis": "EXCEPT IN THE WINTER WHEN THE OOZE OR SNOW OR ICE PREVENTS"}
+{"utt_id": "M01-Session1-headMic-0017", "speaker_id": "M01", "severity": "severe", "reference": "BUBBLE", "hypothesis": "BUBBLE"}
+{"utt_id": "M01-Session1-headMic-0019", "speaker_id": "M01", "severity": "severe", "reference": "HE DRESSES HIMSELF IN AN ANCIENT BLACK FROCK COAT", "hypothesis": "HE DRESSES HIMSELF IN AN ANCIENT BLACK FROCK COAT"}
+{"utt_id": "M01-Session1-headMic-0039", "speaker_id": "M01", "severity": "severe", "reference": "NO", "hypothesis": "NO"}
+{"utt_id": "M01-Session1-headMic-0069", "speaker_id": "M01", "severity": "severe", "reference": "KNOW", "hypothesis": "KNOW"}
+{"utt_id": "M01-Session2_3-headMic-0081", "speaker_id": "M01", "severity": "severe", "reference": "TIE", "hypothesis": "TIE"}
+{"utt_id": "M01-Session2_3-headMic-0101", "speaker_id": "M01", "severity": "severe", "reference": "KNOT", "hypothesis": "KNOT"}
+{"utt_id": "M01-Session2_3-headMic-0140", "speaker_id": "M01", "severity": "severe", "reference": "WE'RE", "hypothesis": "WE'RE"}
+{"utt_id": "M01-Session2_3-headMic-0190", "speaker_id": "M01", "severity": "severe", "reference": "SHY", "hypothesis": "SHY"}
+{"utt_id": "M01-Session2_3-headMic-0271", "speaker_id": "M01", "severity": "severe", "reference": "HE WRAPPED THE PACKAGE HASTILY", "hypothesis": "HE WRAPPED THE PACKAGE HASTILY"}
+{"utt_id": "M02-Session1-headMic-0061", "speaker_id": "M02", "severity": "severe", "reference": "BEAT", "hypothesis": "BEAT"}
+{"utt_id": "M02-Session1-headMic-0079", "speaker_id": "M02", "severity": "severe", "reference": "STICK", "hypothesis": "STICK"}
+{"utt_id": "M02-Session1-headMic-0085", "speaker_id": "M02", "severity": "severe", "reference": "FEE", "hypothesis": "FEE"}
+{"utt_id": "M02-Session1-headMic-0124", "speaker_id": "M02", "severity": "severe", "reference": "ERROR", "hypothesis": "ERROR"}
+{"utt_id": "M02-Session1-headMic-0141", "speaker_id": "M02", "severity": "severe", "reference": "THIS WAS EASY FOR US", "hypothesis": "THIS WAS EASY FOR US"}
+{"utt_id": "M02-Session1-headMic-0170", "speaker_id": "M02", "severity": "severe", "reference": "PAY", "hypothesis": "PAY"}
+{"utt_id": "M02-Session1-headMic-0190", "speaker_id": "M02", "severity": "severe", "reference": "KNEW", "hypothesis": "KNEW"}
+{"utt_id": "M02-Session1-headMic-0191", "speaker_id": "M02", "severity": "severe", "reference": "TIE", "hypothesis": "TIE"}
+{"utt_id": "M02-Session1-headMic-0192", "speaker_id": "M02", "severity": "severe", "reference": "THROUGH", "hypothesis": "THROUGH"}
+{"utt_id": "M02-Session1-headMic-0209", "speaker_id": "M02", "severity": "severe", "reference": "PILE", "hypothesis": "PILE"}
+{"utt_id": "M02-Session1-headMic-0225", "speaker_id": "M02", "severity": "severe", "reference": "BAT", "hypothesis": "BAT"}
+{"utt_id": "M02-Session2-headMic-0098", "speaker_id": "M02", "severity": "severe", "reference": "ALUMINUM SILVERWARE CAN OFTEN BE FLIMSY", "hypothesis": "ALUMINUM SILVERWARE CAN OFTEN BE FLIMSY"}
+{"utt_id": "M02-Session2-headMic-0160", "speaker_id": "M02", "severity": "severe", "reference": "I HAVE HAD MY BELL RUNG", "hypothesis": "I HAVE HAD MY BELL RUNG"}
+{"utt_id": "M02-Session2-headMic-0237", "speaker_id": "M02", "severity": "severe", "reference": "BEING ABLE TO DANCE CAN HELP TOO", "hypothesis": "BEING ABLE TO DANCE CAN HELP TOO"}
+{"utt_id": "MC01-Session1-headMic-0026", "speaker_id": "MC01", "severity": "control", "reference": "SWARM", "hypothesis": "SWARM"}
+{"utt_id": "MC01-Session1-headMic-0045", "speaker_id": "MC01", "severity": "control", "reference": "BAT", "hypothesis": "BAT"}
+{"utt_id": "MC01-Session1-headMic-0064", "speaker_id": "MC01", "severity": "control", "reference": "SIP", "hypothesis": "SIP"}
+{"utt_id": "MC01-Session1-headMic-0078", "speaker_id": "MC01", "severity": "control", "reference": "CHAIR", "hypothesis": "CHAIR"}
+{"utt_id": "MC01-Session1-headMic-0169", "speaker_id": "MC01", "severity": "control", "reference": "FATE", "hypothesis": "FATE"}
+{"utt_id": "MC01-Session1-headMic-0180", "speaker_id": "MC01", "severity": "control", "reference": "I LOOKED UP AND NOTICED TWO OLD MEN", "hypothesis": "I LOOKED UP AND NOTICED TWO OLD MEN"}
+{"utt_id": "MC01-Session1-headMic-0262", "speaker_id": "MC01", "severity": "control", "reference": "SERGEANT", "hypothesis": "SERGEANT"}
+{"utt_id": "MC01-Session1-headMic-0264", "speaker_id": "MC01", "severity": "control", "reference": "CHOP", "hypothesis": "CHOP"}
+{"utt_id": "MC01-Session1-headMic-0277", "speaker_id": "MC01", "severity": "control", "reference": "OSCAR", "hypothesis": "OSCAR"}
+{"utt_id": "MC01-Session1-headMic-0289", "speaker_id": "MC01", "severity": "control", "reference": "IT ALSO PROVIDES FOR FUNDS TO CLEAR SLUMS AND HELP COLLEGES BUILD DORMITORIES", "hypothesis": "IT ALSO PROVIDES FOR FUNDS TO CLEAR SLUMS AND HELP COLLEGES BUILD DORMITORIES"}
+{"utt_id": "MC01-Session1-headMic-0291", "speaker_id": "MC01", "severity": "control", "reference": "SPIT", "hypothesis": "SPIT"}
+{"utt_id": "MC01-Session1-headMic-0298", "speaker_id": "MC01", "severity": "control", "reference": "SPAIN", "hypothesis": "SPAIN"}
+{"utt_id": "MC01-Session2-headMic-0042", "speaker_id": "MC01", "severity": "control", "reference": "FAT", "hypothesis": "FAT"}
+{"utt_id": "MC01-Session2-headMic-0045", "speaker_id": "MC01", "severity": "control", "reference": "I EXPECT WE'LL BOUNCE BACK THIS WEEK", "hypothesis": "I EXPECT WE'LL BOUNCE BACK THIS WEEK"}
+{"utt_id": "MC01-Session2-headMic-0104", "speaker_id": "MC01", "severity": "control", "reference": "DEAD", "hypothesis": "DEAD"}
+{"utt_id": "MC01-Session2-headMic-0109", "speaker_id": "MC01", "severity": "control", "reference": "HE REALLY CRUCIFIED HIM HE NAILED IT FOR A YARD LOSS", "hypothesis": "HE REALLY CRUCIFIED HIM HE NAILED IT FOR A YARD LOSS"}
+{"utt_id": "MC01-Session2-headMic-0123", "speaker_id": "MC01", "severity": "control", "reference": "THE PAIR OF SHOES WAS NEW", "hypothesis": "THE PAIR OF SHOES WAS NEW"}
+{"utt_id": "MC01-Session2-headMic-0125", "speaker_id": "MC01", "severity": "control", "reference": "LOCK", "hypothesis": "LOCK"}
+{"utt_id": "MC01-Session2-headMic-0155", "speaker_id": "MC01", "severity": "control", "reference": "THOSE MUSICIANS HARMONIZE MARVELOUSLY", "hypothesis": "THOSE MUSICIANS HARMONIZE MARVELOUSLY"}
+{"utt_id": "MC01-Session2-headMic-0177", "speaker_id": "MC01", "severity": "control", "reference": "SAID", "hypothesis": "SAID"}
+{"utt_id": "MC01-Session2-headMic-0181", "speaker_id": "MC01", "severity": "control", "reference": "NIGHT", "hypothesis": "NIGHT"}
+{"utt_id": "MC01-Session2-headMic-0256", "speaker_id": "MC01", "severity": "control", "reference": "ETIQUETTE MANDATES COMPLIANCE WITH EXISTING REGULATIONS", "hypothesis": "ETIQUETTE MANDATES COMPLIANCE WITH EXISTING REGULATIONS"}
+{"utt_id": "MC01-Session2-headMic-0289", "speaker_id": "MC01", "severity": "control", "reference": "WHO KNOWS WHAT YOU'LL DISCOVER ABOUT YOURSELF", "hypothesis": "WHO KNOWS WHAT YOU'LL DISCOVER ABOUT YOURSELF"}
+{"utt_id": "MC01-Session2-headMic-0319", "speaker_id": "MC01", "severity": "control", "reference": "LEE", "hypothesis": "LEE"}
+{"utt_id": "MC01-Session2-headMic-0339", "speaker_id": "MC01", "severity": "control", "reference": "BEEF", "hypothesis": "BEEF"}
+{"utt_id": "MC01-Session2-headMic-0340", "speaker_id": "MC01", "severity": "control", "reference": "GEESE", "hypothesis": "GEESE"}
+{"utt_id": "MC01-Session2-headMic-0355", "speaker_id": "MC01", "severity": "control", "reference": "IT WAS VERY POPULAR WITH OUR FANS", "hypothesis": "IT WAS VERY POPULAR WITH OUR FANS"}
+{"utt_id": "MC01-Session3-headMic-0068", "speaker_id": "MC01", "severity": "control", "reference": "EMBER", "hypothesis": "EMBER"}
+{"utt_id": "MC01-Session3-headMic-0076", "speaker_id": "MC01", "severity": "control", "reference": "FENDER", "hypothesis": "FENDER"}
+{"utt_id": "MC01-Session3-headMic-0089", "speaker_id": "MC01", "severity": "control", "reference": "RAKES", "hypothesis": "RAKES"}
+{"utt_id": "MC01-Session3-headMic-0098", "speaker_id": "MC01", "severity": "control", "reference": "TICKS", "hypothesis": "TICKS"}
+{"utt_id": "MC01-Session3-headMic-0128", "speaker_id": "MC01", "severity": "control", "reference": "LOOK FOR POCKETS OF BLACK SAND", "hypothesis": "LOOK FOR POCKETS OF BLACK SAND"}
+{"utt_id": "MC01-Session3-headMic-0181", "speaker_id": "MC01", "severity": "control", "reference": "IS", "hypothesis": "IS"}
+{"utt_id": "MC01-Session3-headMic-0193", "speaker_id": "MC01", "severity": "control", "reference": "SHEET", "hypothesis": "SHEET"}
+{"utt_id": "MC01-Session3-headMic-0201", "speaker_id": "MC01", "severity": "control", "reference": "MUNCH", "hypothesis": "MUNCH"}
+{"utt_id": "MC01-Session3-headMic-0217", "speaker_id": "MC01", "severity": "control", "reference": "WE EXPERIENCE DISTRESS AND FRUSTRATION OBTAINING OUR DEGREES", "hypothesis": "WE EXPERIENCE DISTRESS AND FRUSTRATION OBTAINING OUR DEGREES"}
+{"utt_id": "MC01-Session3-headMic-0331", "speaker_id": "MC01", "severity": "control", "reference": "PINK", "hypothesis": "PINK"}
+{"utt_id": "MC01-Session3-headMic-0361", "speaker_id": "MC01", "severity": "control", "reference": "PAIN", "hypothesis": "PAIN"}
+{"utt_id": "MC01-Session3-headMic-0405", "speaker_id": "MC01", "severity": "control", "reference": "SHAWL", "hypothesis": "SHAWL"}
+{"utt_id": "MC02-Session1-headMic-0066", "speaker_id": "MC02", "severity": "control", "reference": "DOWN", "hypothesis": "DOWN"}
+{"utt_id": "MC02-Session1-headMic-0081", "speaker_id": "MC02", "severity": "control", "reference": "RANGE", "hypothesis": "RANGE"}
+{"utt_id": "MC02-Session1-headMic-0086", "speaker_id": "MC02", "severity": "control", "reference": "RAGE", "hypothesis": "RAGE"}
+{"utt_id": "MC02-Session1-headMic-0093", "speaker_id": "MC02", "severity": "control", "reference": "RACE", "hypothesis": "RACE"}
+{"utt_id": "MC02-Session1-headMic-0096", "speaker_id": "MC02", "severity": "control", "reference": "WE HAVE OFTEN URGED HIM TO WALK MORE AND SMOKE LESS", "hypothesis": "WE HAVE OFTEN URGED HIM TO WALK MORE AND SMOKE LESS"}
+{"utt_id": "MC02-Session1-headMic-0115", "speaker_id": "MC02", "severity": "control", "reference": "CAR", "hypothesis": "CAR"}
+{"utt_id": "MC02-Session1-headMic-0145", "speaker_id": "MC02", "severity": "control", "reference": "WE GATHERED SHELLS ON THE BEACH", "hypothesis": "WE GATHERED SHELLS ON THE BEACH"}
+{"utt_id": "MC02-Session1-headMic-0153", "speaker_id": "MC02", "severity": "control", "reference": "NEAR", "hypothesis": "NEAR"}
+{"utt_id": "MC02-Session1-headMic-0175", "speaker_id": "MC02", "severity": "control", "reference": "SLEEP", "hypothesis": "SLEEP"}
+{"utt_id": "MC02-Session1-headMic-0183", "speaker_id": "MC02", "severity": "control", "reference": "SLIP", "hypothesis": "SLIP"}
+{"utt_id": "MC02-Session1-headMic-0204", "speaker_id": "MC02", "severity": "control", "reference": "BAD", "hypothesis": "BAD"}
+{"utt_id": "MC02-Session1-headMic-0207", "speaker_id": "MC02", "severity": "control", "reference": "FRUIT", "hypothesis": "FRUIT"}
+{"utt_id": "MC02-Session1-headMic-0220", "speaker_id": "MC02", "severity": "control", "reference": "BAD", "hypothesis": "BAD"}
+{"utt_id": "MC02-Session1-headMic-0263", "speaker_id": "MC02", "severity": "control", "reference": "HE FURTHER PROPOSED GRANTS OF AN UNSPECIFIED SUM FOR EXPERIMENTAL HOSPITALS", "hypothesis": "HE FURTHER PROPOSED GRANTS OF AN UNSPECIFIED SUM FOR EXPERIMENTAL HOSPITALS"}
+{"utt_id": "MC02-Session1-headMic-0264", "speaker_id": "MC02", "severity": "control", "reference": "THE BOOKS ARE VERY EXPENSIVE", "hypothesis": "THE BOOKS ARE VERY EXPENSIVE"}
+{"utt_id": "MC02-Session1-headMic-0272", "speaker_id": "MC02", "severity": "control", "reference": "ALFALFA IS HEALTHY FOR YOU", "hypothesis": "ALFALFA IS HEALTHY FOR YOU"}
+{"utt_id": "MC02-Session1-headMic-0277", "speaker_id": "MC02", "severity": "control", "reference": "THE MUSEUM HIRES MUSICIANS EVERY EVENING", "hypothesis": "THE MUSEUM HIRES MUSICIANS EVERY EVENING"}
+{"utt_id": "MC02-Session1-headMic-0298", "speaker_id": "MC02", "severity": "control", "reference": "LEAK", "hypothesis": "LEAK"}
+{"utt_id": "MC02-Session1-headMic-0326", "speaker_id": "MC02", "severity": "control", "reference": "THOUGHT", "hypothesis": "THOUGHT"}
+{"utt_id": "MC02-Session1-headMic-0334", "speaker_id": "MC02", "severity": "control", "reference": "AT", "hypothesis": "AT"}
+{"utt_id": "MC02-Session1-headMic-0369", "speaker_id": "MC02", "severity": "control", "reference": "MITTEN", "hypothesis": "MITTEN"}
+{"utt_id": "MC02-Session2-headMic-0022", "speaker_id": "MC02", "severity": "control", "reference": "WICKED", "hypothesis": "WICKED"}
+{"utt_id": "MC02-Session2-headMic-0027", "speaker_id": "MC02", "severity": "control", "reference": "NEAT", "hypothesis": "NEAT"}
+{"utt_id": "MC02-Session2-headMic-0034", "speaker_id": "MC02", "severity": "control", "reference": "NUT", "hypothesis": "NUT"}
+{"utt_id": "MC02-Session2-headMic-0052", "speaker_id": "MC02", "severity": "control", "reference": "SELL", "hypothesis": "SELL"}
+{"utt_id": "MC02-Session2-headMic-0055", "speaker_id": "MC02", "severity": "control", "reference": "HE REALLY CRUCIFIED HIM HE NAILED IT FOR A YARD LOSS", "hypothesis": "HE REALLY CRUCIFIED HIM HE NAILED IT FOR A YARD LOSS"}
