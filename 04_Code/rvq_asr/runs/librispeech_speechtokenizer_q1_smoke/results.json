@@ -1,0 +1,74 @@
+{
+  "mode": "standard",
+  "init_checkpoint": null,
+  "overfit_samples": 0,
+  "best_epoch": 1,
+  "num_rvq_layers": 1,
+  "active_rvq_layers": [
+    1
+  ],
+  "layer_fusion": "sum",
+  "normalized_layer_weights": [
+    1.0
+  ],
+  "deterministic": false,
+  "selection_metric": "wer",
+  "ctc_loss_device": "cuda",
+  "codebook_size": 1024,
+  "test": {
+    "loss": 2.9010668134689332,
+    "wer": 1.0,
+    "cer": 1.0,
+    "reference_words": 2346,
+    "reference_characters": 10427,
+    "hypothesis_characters": 0,
+    "hypothesis_reference_length_ratio": 0.0,
+    "empty_hypothesis_ratio": 1.0,
+    "ctc_blank_frame_ratio": 0.9961015372347495,
+    "wer_by_severity": {
+      "normal": 1.0
+    },
+    "cer_by_severity": {
+      "normal": 1.0
+    },
+    "wer_by_speaker": {
+      "1089": 1.0,
+      "1188": 1.0
+    },
+    "cer_by_speaker": {
+      "1089": 1.0,
+      "1188": 1.0
+    }
+  },
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 2.9204065895080564,
+      "valid": {
+        "loss": 2.9420399284362793,
+        "wer": 1.0,
+        "cer": 1.0,
+        "reference_words": 1634,
+        "reference_characters": 7317,
+        "hypothesis_characters": 0,
+        "hypothesis_reference_length_ratio": 0.0,
+        "empty_hypothesis_ratio": 1.0,
+        "ctc_blank_frame_ratio": 0.9982880899975544,
+        "wer_by_severity": {
+          "normal": 1.0
+        },
+        "cer_by_severity": {
+          "normal": 1.0
+        },
+        "wer_by_speaker": {
+          "1272": 1.0,
+          "1462": 1.0
+        },
+        "cer_by_speaker": {
+          "1272": 1.0,
+          "1462": 1.0
+        }
+      }
+    }
+  ]
+}

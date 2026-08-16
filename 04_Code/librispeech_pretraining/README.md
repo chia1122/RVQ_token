@@ -41,11 +41,13 @@ around 135k is not train-clean-100 and must be investigated before continuing.
 Use exactly the same model selector as TORGO (`24khz` here):
 
 ```bash
-python 04_Code/torgo_manifest/extract_dac_tokens.py \
-  --manifest 04_Code/librispeech_pretraining/manifest/librispeech_all.jsonl \
+python librispeech_pretraining/extract_speechtokenizer_librispeech_tokens.py \
+  --manifest librispeech_pretraining/manifest/librispeech_test.jsonl\
   --audio-root /data/LibriSpeech \
-  --output-dir 04_Code/librispeech_pretraining/dac_tokens_24khz \
-  --model 24khz \
+  --output-dir librispeech_pretraining/speechtokenizer_hubert_avg_tokens_test_clean \
+  --config /home/rachel/06_opensource_toolkit/SpeechTokenizer/model_hub/speechtokenizer_hubert_avg/config.json \
+  --checkpoint /home/rachel/06_opensource_toolkit/SpeechTokenizer/model_hub/speechtokenizer_hubert_avg/SpeechTokenizer.pt \
+  --subsets test-clean \
   --device cuda
 ```
 
@@ -80,6 +82,13 @@ python -m rvq_asr.train_probe \
 
 This has physical batch 4 and effective batch 16. If memory allows a larger
 physical batch, reduce accumulation so the effective batch stays fixed.
+
+### combine all the tokens
+python librispeech_pretraining/merge_speechtokenizer_tokens.py \
+  --train-dir librispeech_pretraining/speechtokenizer_hubert_avg_tokens_train_clean_100 \
+  --dev-dir librispeech_pretraining/speechtokenizer_hubert_avg_tokens_dev_clean \
+  --test-dir librispeech_pretraining/speechtokenizer_hubert_avg_tokens_test_clean \
+  --output librispeech_pretraining/tokens_librispeech_all.jsonl
 
 ## 5. Fine-tune the same K=4 model on TORGO
 

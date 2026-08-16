@@ -1,0 +1,22 @@
+PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
+python -m rvq_asr/train_probe_with_limits.py\
+  --token-index librispeech_pretraining/tokens_librispeech_all.jsonl \
+  --token-root librispeech_pretraining \
+  --output-dir rvq_asr/runs/librispeech_speechtokenizer_q1_smoke \
+  --num-rvq-layers 1 \
+  --epochs 1 \
+  --batch-size 2 \
+  --grad-accum-steps 8 \
+  --model-dim 256 \
+  --encoder-layers 4 \
+  --heads 4 \
+  --feedforward-dim 1024 \
+  --time-reduction 2 \
+  --subsampling conv \
+  --learning-rate 3e-4 \
+  --dropout 0.1 \
+  --device cuda \
+  --seed 1337 \
+  --limit-train 1000 \
+  --limit-valid 100 \
+  --limit-test 100

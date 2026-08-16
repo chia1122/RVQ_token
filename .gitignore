@@ -8,3 +8,4 @@
 04_Code/torgo_manifest/encodec_tokens_24khz_6kbps
 04_Code/torgo_manifest/encodec_tokens_smoke
 04_Code/torgo_manifest/speechtokenizer_hubert_avg_tokens
+04_Code/librispeech_pretraining/speechtokenizer_hubert_avg_tokens_test_clean/
