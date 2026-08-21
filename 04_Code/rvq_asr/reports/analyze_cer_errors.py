@@ -6,6 +6,12 @@ from pathlib import Path
 """
 python rvq_asr/reports/analyze_cer_errors.py \
   rvq_asr/runs/librispeech_speechtokenizer_q1_seed1337/test_predictions.jsonl
+
+
+cd ~/07_encodec_RVQ/04_Code
+
+python rvq_asr/reports/analyze_cer_errors_severity.py \
+  rvq_asr/runs/torgo_speechtokenizer_q1_librispeech_pretrained_seed1337_lr1e4/test_predictions.jsonl
 """
 
 
