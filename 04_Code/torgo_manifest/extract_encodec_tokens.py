@@ -22,6 +22,13 @@ def load_manifest(path: Path) -> list[dict]:
             missing = required - set(row)
             if missing:
                 raise ValueError(f"Manifest line {line_number} is missing {sorted(missing)}")
+            condition = row.get("condition", row.get("speaker_type"))
+            if condition not in {"control", "dysarthric"}:
+                raise ValueError(
+                    f"Manifest line {line_number} must have condition (or legacy "
+                    "speaker_type) equal to 'control' or 'dysarthric'"
+                )
+            row["condition"] = condition
             rows.append(row)
     if not rows:
         raise ValueError("Manifest is empty")
@@ -174,6 +181,7 @@ def extract(args: argparse.Namespace) -> None:
                     "num_codebooks": int(codes_tn.shape[1]),
                     "codebook_size": codebook_size,
                     "speaker_id": row["speaker_id"],
+                    "condition": row["condition"],
                     "severity": row["severity"],
                     "split": row["split"],
                     "text_norm": row.get("text_norm", ""),
@@ -195,6 +203,7 @@ def extract(args: argparse.Namespace) -> None:
                 "num_codebooks": payload["num_codebooks"],
                 "codebook_size": payload["codebook_size"],
                 "speaker_id": row["speaker_id"],
+                "condition": row["condition"],
                 "severity": row["severity"],
                 "split": row["split"],
                 "text_norm": row.get("text_norm", ""),

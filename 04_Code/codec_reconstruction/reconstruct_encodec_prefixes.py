@@ -10,11 +10,44 @@ import re
 from pathlib import Path
 
 
+DEFAULT_LAYERS = ",".join(str(layer) for layer in range(1, 9))
+
+
 def parse_layers(value: str) -> list[int]:
     layers = sorted({int(item.strip()) for item in value.split(",") if item.strip()})
     if not layers or layers[0] < 1:
         raise ValueError("--layers must contain positive comma-separated integers")
     return layers
+
+
+def validate_requested_layers(payload: dict, layers: list[int], source: Path | str) -> int:
+    if "num_codebooks" not in payload:
+        raise ValueError(f"Token payload is missing num_codebooks: {source}")
+    available_layers = int(payload["num_codebooks"])
+    codes = payload.get("codes")
+    if available_layers < 1 or codes is None or codes.ndim != 2:
+        raise ValueError(f"Invalid token payload dimensions in {source}")
+    if int(codes.shape[1]) != available_layers:
+        raise ValueError(
+            f"num_codebooks={available_layers} does not match codes shape "
+            f"{tuple(codes.shape)} in {source}"
+        )
+    unavailable = [layer for layer in layers if layer > available_layers]
+    if unavailable:
+        raise ValueError(
+            f"Requested layers {unavailable}, but {source} has "
+            f"{available_layers} codebooks"
+        )
+    return available_layers
+
+
+def speech_condition(row: dict) -> str:
+    condition = row.get("condition", row.get("speaker_type"))
+    if condition not in {"control", "dysarthric"}:
+        raise ValueError(
+            f"{row.get('utt_id', 'row')} has invalid or missing speech condition"
+        )
+    return condition
 
 
 def load_jsonl(path: Path) -> list[dict]:
@@ -105,6 +138,7 @@ def reconstruct(args: argparse.Namespace) -> None:
             payload = load_token(token_path)
             if payload.get("codec_model") != args.model or float(payload.get("bandwidth_kbps")) != args.bandwidth:
                 raise ValueError(f"Codec metadata mismatch in {token_path}")
+            validate_requested_layers(payload, layers, token_path)
             source_audio = (args.audio_root / manifest["audio_path"]).resolve()
             target_samples = original_output_samples(source_audio, model.sample_rate)
             for num_layers in layers:
@@ -118,7 +152,8 @@ def reconstruct(args: argparse.Namespace) -> None:
                     torchaudio.save(str(temporary), waveform, model.sample_rate)
                     os.replace(temporary, destination)
                 output_rows.append({
-                    "condition": f"k{num_layers}",
+                    "condition": speech_condition(manifest),
+                    "rvq_condition": f"k{num_layers}",
                     "num_rvq_layers": num_layers,
                     "utt_id": utt_id,
                     "audio_path": relative.as_posix(),
@@ -160,7 +195,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--manifest", type=Path, required=True)
     parser.add_argument("--audio-root", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
-    parser.add_argument("--layers", default="1,2,4,6,8")
+    parser.add_argument("--layers", default=DEFAULT_LAYERS)
     parser.add_argument("--split", choices=("all", "train", "valid", "test"), default="all")
     parser.add_argument("--model", choices=("encodec_24khz", "encodec_48khz"), default="encodec_24khz")
     parser.add_argument("--bandwidth", type=float, default=6.0)

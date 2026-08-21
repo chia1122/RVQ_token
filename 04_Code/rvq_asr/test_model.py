@@ -1,9 +1,15 @@
 import unittest
 
-from rvq_asr.model import RVQTransformerCTC
-from rvq_asr.train_probe import parse_active_layers
+try:
+    import torch  # noqa: F401
+except ImportError:
+    torch = None
+else:
+    from rvq_asr.model import RVQTransformerCTC
+    from rvq_asr.train_probe import parse_active_layers
 
 
+@unittest.skipIf(torch is None, "PyTorch is not installed")
 class LayerFusionTest(unittest.TestCase):
     def make_model(self, **kwargs):
         return RVQTransformerCTC(

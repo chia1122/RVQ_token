@@ -25,11 +25,27 @@ class TokenExtractorHelpersTest(unittest.TestCase):
                 "utt_id": "u1",
                 "audio_path": "F01/a.wav",
                 "speaker_id": "F01",
+                "condition": "dysarthric",
                 "severity": "severe",
                 "split": "train",
             }
             path.write_text(json.dumps(row) + "\n", encoding="utf-8")
             self.assertEqual(load_manifest(path), [row])
+
+    def test_load_manifest_accepts_legacy_speaker_type(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "manifest.jsonl"
+            row = {
+                "utt_id": "u1",
+                "audio_path": "FC01/a.wav",
+                "speaker_id": "FC01",
+                "speaker_type": "control",
+                "severity": "control",
+                "split": "train",
+            }
+            path.write_text(json.dumps(row) + "\n", encoding="utf-8")
+            loaded = load_manifest(path)
+            self.assertEqual(loaded[0]["condition"], "control")
 
 
 if __name__ == "__main__":

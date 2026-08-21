@@ -10,13 +10,16 @@ import random
 from collections import defaultdict
 from pathlib import Path
 
+from evaluate_with_faster_whisper import rvq_condition_from_row
+
 
 def load_pairs(path: Path, condition_a: str, condition_b: str) -> dict[str, list[tuple[dict, dict]]]:
-    rows = [json.loads(line) for line in path.open(encoding="utf-8") if line.strip()]
-    indexed = {(row["condition"], row["utt_id"]): row for row in rows}
+    with path.open(encoding="utf-8") as handle:
+        rows = [json.loads(line) for line in handle if line.strip()]
+    indexed = {(rvq_condition_from_row(row), row["utt_id"]): row for row in rows}
     speakers = defaultdict(list)
     for row in rows:
-        if row["condition"] != condition_a:
+        if rvq_condition_from_row(row) != condition_a:
             continue
         partner = indexed.get((condition_b, row["utt_id"]))
         if partner is not None:

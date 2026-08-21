@@ -70,7 +70,7 @@ python 04_Code/torgo_manifest/build_torgo_manifest.py `
 
 The builder selects only `headMic` by default, ignores the old utterance-level `test_data` field, rejects unintelligible transcripts, checks unique utterance/audio IDs, and asserts that speakers do not cross splits. Numeric transcripts are explicitly excluded instead of being silently corrupted; the current CSV contains one such selected-channel row (`FEBRUARY 13TH`). Add a documented number-expansion policy before retaining it.
 
-Outputs include `torgo_all.jsonl`, one JSONL per split, `excluded_samples.csv`, `dataset_statistics.csv`, and `build_audit.json`.
+Outputs include `torgo_all.jsonl`, one JSONL per split, `excluded_samples.csv`, `dataset_statistics.csv`, and `build_audit.json`. Every manifest row contains an explicit `condition` value (`control` or `dysarthric`); token indexes and downstream predictions preserve this field.
 
 Run tests with Bash or PowerShell:
 
@@ -276,15 +276,15 @@ python -m rvq_asr.train_probe \
   --device cuda
 ```
 
-Repeat with `--num-rvq-layers 1`, `2`, `4`, `6`, and `8` when the selected
-checkpoint has at least eight codebooks. Use the same seeds (at least three),
+Use `rvq_asr.sweep_depths` to run every depth from `1` through the selected
+checkpoint's actual `num_codebooks`. Use the same seeds (at least three),
 architecture, optimizer, and decoding method for every ablation. Each run
 writes `best.pt`, `results.json`, and `test_predictions.jsonl`; `results.json`
 contains overall, per-severity, and per-speaker WER.
 
 Every ablation instantiates embedding tables for all codebooks reported by the
 checkpoint but activates only the first `K`. This keeps total model capacity
-constant across `K=1/2/4/6/8`; inactive embedding tables receive no gradients.
+constant across every K; inactive embedding tables receive no gradients.
 
 Before self-attention, the probe applies learned Conv1d subsampling using the
 fixed `--time-reduction` factor (default `4`) and updates CTC lengths. The old

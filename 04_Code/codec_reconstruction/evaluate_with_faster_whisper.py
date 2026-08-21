@@ -12,6 +12,41 @@ from collections import defaultdict
 from pathlib import Path
 
 
+RVQ_CONDITION = re.compile(r"^k([1-9][0-9]*)$", re.IGNORECASE)
+
+
+def rvq_condition_from_row(row: dict) -> str:
+    value = row.get("rvq_condition")
+    legacy_value = str(row.get("condition", ""))
+    if value is None and (legacy_value == "original" or RVQ_CONDITION.fullmatch(legacy_value)):
+        value = legacy_value
+    if value == "original":
+        return value
+    match = RVQ_CONDITION.fullmatch(str(value or ""))
+    if not match:
+        raise ValueError(f"Missing or invalid rvq_condition for {row.get('utt_id', 'row')}")
+    return f"k{int(match.group(1))}"
+
+
+def rvq_condition_order(values) -> list[str]:
+    def sort_key(value: str):
+        if value == "original":
+            return 0, 0, value
+        match = RVQ_CONDITION.fullmatch(value)
+        if match:
+            return 1, int(match.group(1)), value
+        return 2, 0, value
+
+    return sorted(set(values), key=sort_key)
+
+
+def speech_condition(row: dict) -> str:
+    value = row.get("condition", row.get("speaker_type"))
+    if value not in {"control", "dysarthric"}:
+        raise ValueError(f"Invalid speech condition for {row.get('utt_id', 'row')}")
+    return value
+
+
 def normalize_text(text: str) -> str:
     text = unicodedata.normalize("NFKC", text).upper()
     text = text.replace("’", "'").replace("‘", "'").replace("`", "'").replace("-", " ")
@@ -63,9 +98,18 @@ def load_jsonl(path: Path) -> list[dict]:
 
 
 def build_items(args: argparse.Namespace) -> list[dict]:
-    conditions = {item.strip() for item in args.conditions.split(",") if item.strip()}
     speakers = {item.strip() for item in args.speakers.split(",") if item.strip()}
     manifest = load_jsonl(args.manifest)
+    manifest_by_utt = {row["utt_id"]: row for row in manifest}
+    reconstruction_rows = load_jsonl(args.reconstruction_index)
+    available_conditions = {rvq_condition_from_row(row) for row in reconstruction_rows}
+    if args.conditions.strip().lower() == "auto":
+        conditions = {"original", *available_conditions}
+    else:
+        conditions = {item.strip().lower() for item in args.conditions.split(",") if item.strip()}
+        invalid = [value for value in conditions if value != "original" and not RVQ_CONDITION.fullmatch(value)]
+        if invalid:
+            raise ValueError(f"Invalid evaluation conditions: {sorted(invalid)}")
     items = []
     if "original" in conditions:
         for row in manifest:
@@ -74,22 +118,27 @@ def build_items(args: argparse.Namespace) -> list[dict]:
             if speakers and row["speaker_id"] not in speakers:
                 continue
             items.append({
-                "condition": "original", "utt_id": row["utt_id"],
+                "rvq_condition": "original", "utt_id": row["utt_id"],
                 "audio": args.audio_root / row["audio_path"],
-                "speaker_id": row["speaker_id"], "severity": row["severity"],
+                "speaker_id": row["speaker_id"], "condition": speech_condition(row),
+                "severity": row["severity"],
                 "split": row["split"], "reference": row["text_norm"],
             })
-    for row in load_jsonl(args.reconstruction_index):
-        if row["condition"] not in conditions:
+    for row in reconstruction_rows:
+        rvq_condition = rvq_condition_from_row(row)
+        if rvq_condition not in conditions:
             continue
         if args.split != "all" and row["split"] != args.split:
             continue
         if speakers and row["speaker_id"] not in speakers:
             continue
+        manifest_row = manifest_by_utt[row["utt_id"]]
         items.append({
-            "condition": row["condition"], "utt_id": row["utt_id"],
+            "rvq_condition": rvq_condition, "utt_id": row["utt_id"],
             "audio": args.reconstruction_root / row["audio_path"],
-            "speaker_id": row["speaker_id"], "severity": row["severity"],
+            "speaker_id": row["speaker_id"],
+            "condition": speech_condition(row) if row.get("condition") in {"control", "dysarthric"} else speech_condition(manifest_row),
+            "severity": row["severity"],
             "split": row["split"], "reference": row["text_norm"],
         })
     if not items:
@@ -98,10 +147,10 @@ def build_items(args: argparse.Namespace) -> list[dict]:
         counts = defaultdict(int)
         limited = []
         for item in items:
-            if counts[item["condition"]] >= args.limit_per_condition:
+            if counts[item["rvq_condition"]] >= args.limit_per_condition:
                 continue
             limited.append(item)
-            counts[item["condition"]] += 1
+            counts[item["rvq_condition"]] += 1
         items = limited
     return items
 
@@ -112,6 +161,26 @@ def write_jsonl(path: Path, rows: list[dict]) -> None:
         for row in rows:
             handle.write(json.dumps(row, ensure_ascii=True, sort_keys=True) + "\n")
     temporary.replace(path)
+
+
+def prediction_from_hypothesis(item: dict, raw_hypothesis: str) -> dict:
+    hypothesis = normalize_text(raw_hypothesis)
+    reference = normalize_text(item["reference"])
+    reference_words = reference.split()
+    ref_chars = list(reference.replace(" ", ""))
+    word_edits = edit_distance(reference_words, hypothesis.split())
+    char_edits = edit_distance(ref_chars, list(hypothesis.replace(" ", "")))
+    return {
+        "condition": item["condition"],
+        "rvq_condition": item["rvq_condition"], "utt_id": item["utt_id"],
+        "speaker_id": item["speaker_id"], "severity": item["severity"],
+        "split": item["split"], "reference": reference,
+        "hypothesis": hypothesis, "raw_hypothesis": raw_hypothesis,
+        "word_edits": word_edits, "reference_words": len(reference_words),
+        "wer": word_edits / len(reference_words),
+        "character_edits": char_edits, "reference_characters": len(ref_chars),
+        "cer": char_edits / len(ref_chars),
+    }
 
 
 def evaluate(args: argparse.Namespace) -> None:
@@ -125,10 +194,21 @@ def evaluate(args: argparse.Namespace) -> None:
     model = WhisperModel(args.model, device=args.device, compute_type=args.compute_type)
     predictions_path = args.output_dir / "predictions.jsonl"
     predictions = [] if args.overwrite or not predictions_path.is_file() else load_jsonl(predictions_path)
-    completed = {(row["condition"], row["utt_id"]) for row in predictions}
+    item_metadata = {(item["rvq_condition"], item["utt_id"]): item for item in items}
+    normalized_predictions = []
+    for row in predictions:
+        rvq_condition = rvq_condition_from_row(row)
+        metadata = item_metadata.get((rvq_condition, row["utt_id"]))
+        if metadata is None:
+            continue
+        row["rvq_condition"] = rvq_condition
+        row["condition"] = metadata["condition"]
+        normalized_predictions.append(row)
+    predictions = normalized_predictions
+    completed = {(row["rvq_condition"], row["utt_id"]) for row in predictions}
     failures = []
     for index, item in enumerate(items, start=1):
-        if (item["condition"], item["utt_id"]) in completed:
+        if (item["rvq_condition"], item["utt_id"]) in completed:
             continue
         try:
             segments, _ = model.transcribe(
@@ -137,25 +217,11 @@ def evaluate(args: argparse.Namespace) -> None:
                 condition_on_previous_text=False,
             )
             raw_hypothesis = " ".join(segment.text.strip() for segment in segments).strip()
-            hypothesis = normalize_text(raw_hypothesis)
-            reference = normalize_text(item["reference"])
-            word_edits = edit_distance(reference.split(), hypothesis.split())
-            ref_chars = list(reference.replace(" ", ""))
-            char_edits = edit_distance(ref_chars, list(hypothesis.replace(" ", "")))
-            predictions.append({
-                "condition": item["condition"], "utt_id": item["utt_id"],
-                "speaker_id": item["speaker_id"], "severity": item["severity"],
-                "split": item["split"], "reference": reference,
-                "hypothesis": hypothesis, "raw_hypothesis": raw_hypothesis,
-                "word_edits": word_edits, "reference_words": len(reference.split()),
-                "wer": word_edits / len(reference.split()),
-                "character_edits": char_edits, "reference_characters": len(ref_chars),
-                "cer": char_edits / len(ref_chars),
-            })
-            completed.add((item["condition"], item["utt_id"]))
+            predictions.append(prediction_from_hypothesis(item, raw_hypothesis))
+            completed.add((item["rvq_condition"], item["utt_id"]))
         except Exception as exc:
             failures.append({
-                "condition": item["condition"], "utt_id": item["utt_id"],
+                "rvq_condition": item["rvq_condition"], "utt_id": item["utt_id"],
                 "error": f"{type(exc).__name__}: {exc}",
             })
             if not args.skip_errors:
@@ -172,16 +238,26 @@ def evaluate(args: argparse.Namespace) -> None:
     groups = defaultdict(Scores)
     for row in predictions:
         for group_type, group_value in (
-            ("overall", "all"), ("speaker", row["speaker_id"]),
+            ("overall", "all"), ("condition", row["condition"]),
+            ("speaker", row["speaker_id"]),
             ("severity", row["severity"]),
         ):
-            key = (row["condition"], group_type, group_value)
+            key = (row["rvq_condition"], group_type, group_value)
             groups[key].update(row["reference"], row["hypothesis"])
             groups[key].utterances = getattr(groups[key], "utterances", 0) + 1
     summary_rows = []
-    for (condition, group_type, group_value), scores in sorted(groups.items()):
+    condition_rank = {
+        value: index for index, value in enumerate(
+            rvq_condition_order(key[0] for key in groups)
+        )
+    }
+    ordered_group_keys = sorted(
+        groups, key=lambda key: (condition_rank[key[0]], key[1], key[2])
+    )
+    for (rvq_condition, group_type, group_value) in ordered_group_keys:
+        scores = groups[(rvq_condition, group_type, group_value)]
         summary_rows.append({
-            "condition": condition, "group_type": group_type,
+            "rvq_condition": rvq_condition, "group_type": group_type,
             "group_value": group_value, **scores.row(),
         })
     with (args.output_dir / "summary.csv").open("w", encoding="utf-8-sig", newline="") as handle:
@@ -189,11 +265,11 @@ def evaluate(args: argparse.Namespace) -> None:
         writer.writeheader()
         writer.writerows(summary_rows)
 
-    condition_order = [item for item in ("original", "k1", "k2", "k4", "k6", "k8") if any(
-        row["condition"] == item for row in predictions
-    )]
+    condition_order = rvq_condition_order(row["rvq_condition"] for row in predictions)
     speaker_severity = {row["speaker_id"]: row["severity"] for row in predictions}
+    speaker_conditions = {row["speaker_id"]: row["condition"] for row in predictions}
     for group_type, filename, identity_name in (
+        ("condition", "comparison_by_condition.csv", "condition"),
         ("speaker", "comparison_by_speaker.csv", "speaker_id"),
         ("severity", "comparison_by_severity.csv", "severity"),
     ):
@@ -206,6 +282,7 @@ def evaluate(args: argparse.Namespace) -> None:
             comparison_row = {identity_name: group_value}
             if group_type == "speaker":
                 comparison_row["severity"] = speaker_severity[group_value]
+                comparison_row["condition"] = speaker_conditions[group_value]
             for condition in condition_order:
                 scores = groups.get((condition, group_type, group_value))
                 comparison_row[f"{condition}_wer"] = scores.row()["wer"] if scores else ""
@@ -218,7 +295,7 @@ def evaluate(args: argparse.Namespace) -> None:
     experiment = {
         "asr_model": args.model, "device": args.device,
         "compute_type": args.compute_type, "language": args.language,
-        "beam_size": args.beam_size, "conditions": args.conditions,
+        "beam_size": args.beam_size, "conditions": condition_order,
         "split": args.split, "items": len(items),
         "predictions": len(predictions), "failures": len(failures),
     }
@@ -235,7 +312,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--reconstruction-index", type=Path, required=True)
     parser.add_argument("--reconstruction-root", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
-    parser.add_argument("--conditions", default="original,k1,k2,k4,k6,k8")
+    parser.add_argument(
+        "--conditions", default="auto",
+        help="Comma-separated original/kN values, or auto to discover reconstruction depths",
+    )
     parser.add_argument("--split", choices=("all", "train", "valid", "test"), default="all")
     parser.add_argument("--speakers", default="", help="Optional comma-separated speaker IDs")
     parser.add_argument("--model", default="large-v3")

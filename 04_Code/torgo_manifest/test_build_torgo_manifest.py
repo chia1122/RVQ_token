@@ -3,7 +3,13 @@ import unittest
 import wave
 from pathlib import Path
 
-from build_torgo_manifest import audio_relative_path, is_included, normalize_text, wav_metadata
+from build_torgo_manifest import (
+    audio_relative_path,
+    is_included,
+    normalize_text,
+    speaker_condition,
+    wav_metadata,
+)
 
 
 class ManifestHelpersTest(unittest.TestCase):
@@ -22,6 +28,14 @@ class ManifestHelpersTest(unittest.TestCase):
         self.assertFalse(is_included({"include_in_experiment": "false"}))
         with self.assertRaises(ValueError):
             is_included({"include_in_experiment": "maybe"})
+
+    def test_speaker_condition(self):
+        self.assertEqual(speaker_condition({"speaker_type": "control"}), "control")
+        self.assertEqual(
+            speaker_condition({"speaker_type": "dysarthric"}), "dysarthric"
+        )
+        with self.assertRaises(ValueError):
+            speaker_condition({"speaker_type": "unknown"})
 
     def test_wav_metadata(self):
         with tempfile.TemporaryDirectory() as directory:

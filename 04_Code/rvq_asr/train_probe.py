@@ -15,13 +15,25 @@ from torch.utils.data import DataLoader, Subset
 
 from rvq_asr.data import CTCBatchCollator, RVQTokenDataset
 from rvq_asr.model import RVQTransformerCTC
-from rvq_asr.text import CharacterTokenizer, ErrorRate
+from rvq_asr.text import CharacterTokenizer, ErrorRate, prediction_row
 
 
 def read_index_dimensions(path: Path) -> tuple[int, int]:
+    dimensions = set()
     with path.open(encoding="utf-8") as handle:
-        first = json.loads(next(line for line in handle if line.strip()))
-    return int(first["codebook_size"]), int(first["num_codebooks"])
+        for line_number, line in enumerate(handle, start=1):
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            try:
+                dimensions.add((int(row["codebook_size"]), int(row["num_codebooks"])))
+            except (KeyError, TypeError, ValueError) as exc:
+                raise ValueError(f"Invalid token dimensions on index line {line_number}") from exc
+    if not dimensions:
+        raise ValueError("Token index is empty")
+    if len(dimensions) != 1:
+        raise ValueError(f"Inconsistent token dimensions in index: {sorted(dimensions)}")
+    return next(iter(dimensions))
 
 
 def parse_active_layers(value: str) -> list[int]:
@@ -122,6 +134,8 @@ def evaluate(
     overall_cer = ErrorRate()
     by_severity = defaultdict(ErrorRate)
     cer_by_severity = defaultdict(ErrorRate)
+    by_condition = defaultdict(ErrorRate)
+    cer_by_condition = defaultdict(ErrorRate)
     by_speaker = defaultdict(ErrorRate)
     cer_by_speaker = defaultdict(ErrorRate)
     predictions = []
@@ -130,6 +144,11 @@ def evaluate(
     hypothesis_characters = 0
     blank_frames = 0
     valid_frames = 0
+    diagnostics = defaultdict(lambda: {
+        "utterances": 0, "empty_hypotheses": 0, "blank_frames": 0,
+        "valid_frames": 0, "reference_characters": 0,
+        "hypothesis_characters": 0,
+    })
     for batch in loader:
         batch = move_batch(batch, device)
         logits, output_lengths = model(batch["codes"], batch["input_lengths"])
@@ -145,8 +164,11 @@ def evaluate(
             reference = batch["texts"][index]
             severity = batch["severities"][index]
             speaker = batch["speaker_ids"][index]
+            condition = batch["conditions"][index]
             overall.update_words(reference, hypothesis)
             overall_cer.update_characters(reference, hypothesis)
+            by_condition[condition].update_words(reference, hypothesis)
+            cer_by_condition[condition].update_characters(reference, hypothesis)
             by_severity[severity].update_words(reference, hypothesis)
             cer_by_severity[severity].update_characters(reference, hypothesis)
             by_speaker[speaker].update_words(reference, hypothesis)
@@ -156,16 +178,31 @@ def evaluate(
             hypothesis_characters += len(hypothesis.replace(" ", ""))
             blank_frames += sum(token_id == tokenizer.blank_id for token_id in frame_ids)
             valid_frames += len(frame_ids)
-            predictions.append({
-                "utt_id": batch["utt_ids"][index], "speaker_id": speaker,
-                "severity": severity, "reference": reference, "hypothesis": hypothesis,
-            })
+            group_keys = (
+                ("overall", "all"), ("condition", condition),
+                ("severity", severity), ("speaker", speaker),
+            )
+            for group_key in group_keys:
+                diagnostic = diagnostics[group_key]
+                diagnostic["utterances"] += 1
+                diagnostic["empty_hypotheses"] += int(not hypothesis)
+                diagnostic["blank_frames"] += sum(
+                    token_id == tokenizer.blank_id for token_id in frame_ids
+                )
+                diagnostic["valid_frames"] += len(frame_ids)
+                diagnostic["reference_characters"] += len(reference.replace(" ", ""))
+                diagnostic["hypothesis_characters"] += len(hypothesis.replace(" ", ""))
+            predictions.append(prediction_row(
+                batch["utt_ids"][index], speaker, condition, severity,
+                reference, hypothesis,
+            ))
             if frame_output_dir is not None:
                 frame_output_dir.mkdir(parents=True, exist_ok=True)
                 safe_utt_id = re.sub(r"[^A-Za-z0-9_.-]+", "_", batch["utt_ids"][index])
                 torch.save({
                     "utt_id": batch["utt_ids"][index],
                     "speaker_id": speaker,
+                    "condition": condition,
                     "severity": severity,
                     "reference": reference,
                     "hypothesis": hypothesis,
@@ -180,6 +217,42 @@ def evaluate(
         with predictions_path.open("w", encoding="utf-8", newline="\n") as handle:
             for row in predictions:
                 handle.write(json.dumps(row, ensure_ascii=True) + "\n")
+    word_groups = {("overall", "all"): overall}
+    character_groups = {("overall", "all"): overall_cer}
+    for group_type, word_values, character_values in (
+        ("condition", by_condition, cer_by_condition),
+        ("severity", by_severity, cer_by_severity),
+        ("speaker", by_speaker, cer_by_speaker),
+    ):
+        for group_value, metric in word_values.items():
+            word_groups[(group_type, group_value)] = metric
+            character_groups[(group_type, group_value)] = character_values[group_value]
+    group_order = {"overall": 0, "condition": 1, "severity": 2, "speaker": 3}
+    grouped_metrics = []
+    for group_key in sorted(word_groups, key=lambda key: (group_order[key[0]], key[1])):
+        word_metric = word_groups[group_key]
+        character_metric = character_groups[group_key]
+        diagnostic = diagnostics[group_key]
+        grouped_metrics.append({
+            "group_type": group_key[0], "group_value": group_key[1],
+            "utterances": diagnostic["utterances"],
+            "reference_words": word_metric.reference_units,
+            "reference_characters": character_metric.reference_units,
+            "wer": word_metric.value, "cer": character_metric.value,
+            **word_metric.counts_and_rates(),
+            "empty_hypothesis_ratio": (
+                diagnostic["empty_hypotheses"] / diagnostic["utterances"]
+                if diagnostic["utterances"] else 0.0
+            ),
+            "ctc_blank_frame_ratio": (
+                diagnostic["blank_frames"] / diagnostic["valid_frames"]
+                if diagnostic["valid_frames"] else 0.0
+            ),
+            "hypothesis_reference_length_ratio": (
+                diagnostic["hypothesis_characters"] / diagnostic["reference_characters"]
+                if diagnostic["reference_characters"] else 0.0
+            ),
+        })
     return {
         "loss": total_loss / len(loader),
         "wer": overall.value,
@@ -192,10 +265,13 @@ def evaluate(
         ),
         "empty_hypothesis_ratio": empty_hypotheses / len(predictions) if predictions else 0.0,
         "ctc_blank_frame_ratio": blank_frames / valid_frames if valid_frames else 0.0,
+        "wer_by_condition": {key: value.value for key, value in sorted(by_condition.items())},
+        "cer_by_condition": {key: value.value for key, value in sorted(cer_by_condition.items())},
         "wer_by_severity": {key: value.value for key, value in sorted(by_severity.items())},
         "cer_by_severity": {key: value.value for key, value in sorted(cer_by_severity.items())},
         "wer_by_speaker": {key: value.value for key, value in sorted(by_speaker.items())},
         "cer_by_speaker": {key: value.value for key, value in sorted(cer_by_speaker.items())},
+        "groups": grouped_metrics,
     }
 
 

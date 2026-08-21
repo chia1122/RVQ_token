@@ -92,7 +92,8 @@ def extract(args: argparse.Namespace) -> None:
                     "utt_id": row["utt_id"], "codes": codes_tn,
                     "shape_order": "T,N", "num_frames": int(codes_tn.shape[0]),
                     "num_codebooks": int(codes_tn.shape[1]), "codebook_size": codebook_size,
-                    "speaker_id": row["speaker_id"], "severity": row["severity"],
+                    "speaker_id": row["speaker_id"], "condition": row["condition"],
+                    "severity": row["severity"],
                     "split": row["split"], "text_norm": row.get("text_norm", ""),
                     "audio_path": row["audio_path"], "source_sample_rate": source_sample_rate,
                     "codec_sample_rate": int(model.sample_rate),
@@ -110,7 +111,8 @@ def extract(args: argparse.Namespace) -> None:
                 "utt_id": row["utt_id"], "token_path": relative_token.as_posix(),
                 "num_frames": payload["num_frames"], "num_codebooks": payload["num_codebooks"],
                 "codebook_size": payload["codebook_size"], "speaker_id": row["speaker_id"],
-                "severity": row["severity"], "split": row["split"],
+                "condition": row["condition"], "severity": row["severity"],
+                "split": row["split"],
                 "text_norm": row.get("text_norm", ""),
             })
         except Exception as exc:

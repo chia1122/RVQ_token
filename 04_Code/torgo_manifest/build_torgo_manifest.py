@@ -49,6 +49,17 @@ def is_included(metadata: dict[str, str]) -> bool:
     return value == "true"
 
 
+def speaker_condition(metadata: dict[str, str]) -> str:
+    """Return the protocol-preserving TORGO condition from speaker metadata."""
+    condition = metadata.get("speaker_type", "").strip().lower()
+    if condition not in {"control", "dysarthric"}:
+        raise ValueError(
+            "speaker_type must be 'control' or 'dysarthric', "
+            f"found {condition!r}"
+        )
+    return condition
+
+
 def load_splits(path: Path) -> tuple[dict[str, str], dict]:
     config = json.loads(path.read_text(encoding="utf-8"))
     assignment = {}
@@ -195,6 +206,7 @@ def build(args: argparse.Namespace) -> None:
                 "session_id": session_match.group(0) if session_match else "unknown",
                 "gender": metadata[speaker]["gender"],
                 "speaker_type": metadata[speaker]["speaker_type"],
+                "condition": speaker_condition(metadata[speaker]),
                 "severity": metadata[speaker]["severity"] or "unknown",
                 "severity_source": metadata[speaker]["severity_source"] or "unknown",
                 "microphone": microphone,

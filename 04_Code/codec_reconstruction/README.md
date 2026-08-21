@@ -1,7 +1,7 @@
 # RVQ-prefix reconstruction and pretrained-ASR evaluation
 
-This experiment decodes EnCodec prefixes (`Q1`, `Q1:Q2`, `Q1:Q4`, `Q1:Q6`,
-`Q1:Q8`) to WAV and evaluates every condition with one fixed faster-whisper
+This experiment decodes every EnCodec prefix (`Q1` through `Q1:Q8`) to WAV
+and evaluates every available depth with one fixed faster-whisper
 checkpoint and decoding configuration.
 
 The same workflow supports DAC. If DAC is the primary codec, use
@@ -25,7 +25,7 @@ python 04_Code/codec_reconstruction/reconstruct_dac_prefixes.py \
   --manifest 04_Code/torgo_manifest/output/torgo_all.jsonl \
   --audio-root /data/TORGO \
   --output-dir 04_Code/codec_reconstruction/outputs/dac_smoke \
-  --layers 1,2,4,6,8 \
+  --layers 1,2,3,4,5,6,7,8 \
   --model 24khz \
   --split test \
   --limit 1 \
@@ -41,7 +41,7 @@ python 04_Code/codec_reconstruction/evaluate_with_faster_whisper.py \
   --reconstruction-index 04_Code/codec_reconstruction/outputs/dac_smoke/reconstruction_index.jsonl \
   --reconstruction-root 04_Code/codec_reconstruction/outputs/dac_smoke \
   --output-dir 04_Code/codec_reconstruction/asr_results/dac_smoke_large_v3 \
-  --conditions original,k1,k2,k4,k6,k8 \
+  --conditions auto \
   --split test \
   --limit-per-condition 1 \
   --model large-v3 \
@@ -75,13 +75,13 @@ python 04_Code/codec_reconstruction/reconstruct_encodec_prefixes.py \
   --manifest 04_Code/torgo_manifest/output/torgo_all.jsonl \
   --audio-root /data/TORGO \
   --output-dir 04_Code/codec_reconstruction/outputs/encodec_smoke \
-  --layers 1,2,4,6,8 \
+  --layers 1,2,3,4,5,6,7,8 \
   --split test \
   --limit 1 \
   --device cuda
 ```
 
-The summary should report one utterance, five WAV files, and zero failures.
+The summary should report one utterance, eight WAV files, and zero failures.
 Listen to or inspect every generated WAV before the full run. K1 is expected to
 sound coarser than K8, but every file must be non-empty and have approximately
 the source duration.
@@ -95,7 +95,7 @@ python 04_Code/codec_reconstruction/evaluate_with_faster_whisper.py \
   --reconstruction-index 04_Code/codec_reconstruction/outputs/encodec_smoke/reconstruction_index.jsonl \
   --reconstruction-root 04_Code/codec_reconstruction/outputs/encodec_smoke \
   --output-dir 04_Code/codec_reconstruction/asr_results/encodec_smoke_large_v3 \
-  --conditions original,k1,k2,k4,k6,k8 \
+  --conditions auto \
   --split test \
   --limit-per-condition 1 \
   --model large-v3 \
@@ -120,12 +120,12 @@ python 04_Code/codec_reconstruction/reconstruct_encodec_prefixes.py \
   --manifest 04_Code/torgo_manifest/output/torgo_all.jsonl \
   --audio-root /data/TORGO \
   --output-dir 04_Code/codec_reconstruction/outputs/encodec_24khz_6kbps \
-  --layers 1,2,4,6,8 \
+  --layers 1,2,3,4,5,6,7,8 \
   --split all \
   --device cuda
 ```
 
-Expected output count is `7140 x 5 = 35700` WAV files. Rerunning the command
+Expected output count is `7140 x 8 = 57120` WAV files. Rerunning the command
 reuses existing WAV files unless `--overwrite` is supplied.
 
 ## 5. Full pretrained-ASR evaluation
@@ -137,7 +137,7 @@ python 04_Code/codec_reconstruction/evaluate_with_faster_whisper.py \
   --reconstruction-index 04_Code/codec_reconstruction/outputs/encodec_24khz_6kbps/reconstruction_index.jsonl \
   --reconstruction-root 04_Code/codec_reconstruction/outputs/encodec_24khz_6kbps \
   --output-dir 04_Code/codec_reconstruction/asr_results/encodec_24khz_6kbps_large_v3 \
-  --conditions original,k1,k2,k4,k6,k8 \
+  --conditions auto \
   --split all \
   --model large-v3 \
   --language en \
@@ -152,15 +152,17 @@ the ASR predictions again.
 
 Outputs:
 
-- `predictions.jsonl`: utterance-level reference, hypothesis, WER, and CER.
-- `summary.csv`: WER/CER grouped by condition, speaker, and severity.
-- `comparison_by_speaker.csv`: horizontal Original/K1/K2/K4/K6/K8 table.
+- `predictions.jsonl`: utterance-level reference, hypothesis, WER, CER,
+  control/dysarthric `condition`, and depth-specific `rvq_condition`.
+- `summary.csv`: WER/CER grouped by overall, control/dysarthric condition, speaker, and severity.
+- `comparison_by_condition.csv`: horizontal depth comparison for control/dysarthric speech.
+- `comparison_by_speaker.csv`: horizontal table with every actually available depth.
 - `comparison_by_severity.csv`: horizontal condition comparison by severity.
 - `failures.jsonl`: failed items.
 - `experiment.json`: fixed ASR and decoding configuration.
 
 The primary comparison is within the same speaker/severity across `original`,
-`k1`, `k2`, `k4`, `k6`, and `k8`. This reconstructed-audio experiment is a
+every actually available `kN`. This reconstructed-audio experiment is a
 complement to, not a replacement for, direct discrete-token probing.
 
 ## Severe-speaker experiment and paired bootstrap
@@ -175,7 +177,7 @@ python 04_Code/codec_reconstruction/reconstruct_dac_prefixes.py \
   --manifest 04_Code/torgo_manifest/output/torgo_all.jsonl \
   --audio-root /data/TORGO \
   --output-dir 04_Code/codec_reconstruction/outputs/dac_severe \
-  --layers 1,2,4,6,8 \
+  --layers 1,2,3,4,5,6,7,8 \
   --model 24khz \
   --split all \
   --speakers F01,M01,M02,M04 \
@@ -191,7 +193,7 @@ python 04_Code/codec_reconstruction/evaluate_with_faster_whisper.py \
   --reconstruction-index 04_Code/codec_reconstruction/outputs/dac_severe/reconstruction_index.jsonl \
   --reconstruction-root 04_Code/codec_reconstruction/outputs/dac_severe \
   --output-dir 04_Code/codec_reconstruction/asr_results/dac_severe_large_v3 \
-  --conditions original,k1,k2,k4,k6,k8 \
+  --conditions auto \
   --split all \
   --speakers F01,M01,M02,M04 \
   --model large-v3 \

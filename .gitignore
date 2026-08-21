@@ -1,4 +1,8 @@
+__pycache__/
+*.py[cod]
+
 04_Code/codec_reconstruction/outputs
+04_Code/rvq_asr/trajectories/
 04_Code/librispeech_pretraining/speechtokenizer_hubert_avg_tokens_dev_clean
 04_Code/librispeech_pretraining/speechtokenizer_hubert_avg_tokens_smoke
 04_Code/librispeech_pretraining/speechtokenizer_hubert_avg_tokens_smoke100

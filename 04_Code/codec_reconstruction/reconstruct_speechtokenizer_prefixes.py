@@ -8,7 +8,16 @@ import json
 import os
 from pathlib import Path
 
-from reconstruct_encodec_prefixes import load_jsonl, load_token, original_output_samples, parse_layers, safe_name
+from reconstruct_encodec_prefixes import (
+    DEFAULT_LAYERS,
+    load_jsonl,
+    load_token,
+    original_output_samples,
+    parse_layers,
+    safe_name,
+    speech_condition,
+    validate_requested_layers,
+)
 
 
 def load_model(config: Path, checkpoint: Path, device: str):
@@ -65,6 +74,7 @@ def reconstruct(args: argparse.Namespace) -> None:
             payload = load_token(args.token_root / token_row["token_path"])
             if payload.get("codec_model") != "speechtokenizer_hubert_avg":
                 raise ValueError(f"Codec metadata mismatch for {utt_id}")
+            validate_requested_layers(payload, layers, args.token_root / token_row["token_path"])
             source_audio = args.audio_root / manifest["audio_path"]
             target_samples = original_output_samples(source_audio, int(model.sample_rate))
             for num_layers in layers:
@@ -77,7 +87,8 @@ def reconstruct(args: argparse.Namespace) -> None:
                     torchaudio.save(str(temporary), waveform, int(model.sample_rate))
                     os.replace(temporary, destination)
                 output_rows.append({
-                    "condition": f"k{num_layers}", "num_rvq_layers": num_layers,
+                    "condition": speech_condition(manifest),
+                    "rvq_condition": f"k{num_layers}", "num_rvq_layers": num_layers,
                     "utt_id": utt_id, "audio_path": relative.as_posix(),
                     "speaker_id": manifest["speaker_id"], "severity": manifest["severity"],
                     "split": manifest["split"], "text_norm": manifest["text_norm"],
@@ -113,7 +124,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--checkpoint", type=Path, required=True)
-    parser.add_argument("--layers", default="1,2,4,6,8")
+    parser.add_argument("--layers", default=DEFAULT_LAYERS)
     parser.add_argument("--split", choices=("all", "train", "valid", "test"), default="all")
     parser.add_argument("--speakers", default="")
     parser.add_argument("--limit", type=int, default=0)
@@ -124,6 +135,10 @@ def parse_args() -> argparse.Namespace:
     args = parser.parse_args()
     if args.limit < 0 or args.log_every < 1:
         parser.error("Invalid --limit/--log-every")
+    try:
+        parse_layers(args.layers)
+    except ValueError as exc:
+        parser.error(str(exc))
     return args
 
 

@@ -75,6 +75,7 @@ class RVQTokenDataset(Dataset):
             "targets": targets,
             "utt_id": row["utt_id"],
             "speaker_id": row["speaker_id"],
+            "condition": row.get("condition", "unknown"),
             "severity": row["severity"],
             "text": row["text_norm"],
         }
@@ -100,6 +101,7 @@ class CTCBatchCollator:
             "target_lengths": target_lengths,
             "utt_ids": [sample["utt_id"] for sample in samples],
             "speaker_ids": [sample["speaker_id"] for sample in samples],
+            "conditions": [sample["condition"] for sample in samples],
             "severities": [sample["severity"] for sample in samples],
             "texts": [sample["text"] for sample in samples],
         }

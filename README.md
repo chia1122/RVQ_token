@@ -91,8 +91,8 @@ TORGO audio + transcript index
 rvq_asr/          codec_reconstruction/
        │                  │
        │             Decode RVQ prefixes
-       │             K1 / K2 / K4 /
-       │             K6 / K8
+       │             K1 / K2 / K3 / K4 /
+       │             K5 / K6 / K7 / K8
        │                  │
        ▼                  ▼
 Direct token       Reconstructed WAV
@@ -529,7 +529,7 @@ python codec_reconstruction/reconstruct_dac_prefixes.py \
     --manifest torgo_manifest/output/torgo_all.jsonl \
     --audio-root /data/TORGO \
     --output-dir codec_reconstruction/outputs/dac_smoke \
-    --layers 1,2,4,6,8 \
+    --layers 1,2,3,4,5,6,7,8 \
     --model 24khz \
     --split test \
     --limit 1 \
@@ -547,7 +547,7 @@ python codec_reconstruction/evaluate_with_faster_whisper.py \
     --reconstruction-index codec_reconstruction/outputs/dac_smoke/reconstruction_index.jsonl \
     --reconstruction-root codec_reconstruction/outputs/dac_smoke \
     --output-dir codec_reconstruction/asr_results/dac_smoke_large_v3 \
-    --conditions original,k1,k2,k4,k6,k8 \
+    --conditions auto \
     --split test \
     --limit-per-condition 1 \
     --model large-v3 \
@@ -558,6 +558,39 @@ python codec_reconstruction/evaluate_with_faster_whisper.py \
 ```
 
 After confirming that the smoke test works, remove the limits and use a separate output directory for the full run.
+
+### Step 5 — Run the complete CTC depth trajectory
+
+Expose `04_Code` on `PYTHONPATH`, then use the sweep entry point. It discovers
+the actual number of codebooks, rejects unavailable depths, and gives every
+codec/depth/seed combination an independent output directory.
+
+```powershell
+$env:PYTHONPATH="$PWD/04_Code"
+python -m rvq_asr.sweep_depths `
+  --token-index 04_Code/torgo_manifest/speechtokenizer_hubert_avg_tokens/tokens.jsonl `
+  --token-root 04_Code/torgo_manifest/speechtokenizer_hubert_avg_tokens `
+  --output-root 04_Code/rvq_asr/trajectories/phase1 `
+  --codec speechtokenizer `
+  --depths auto `
+  --seeds 1337,2026,3407 `
+  -- `
+  --epochs 30 `
+  --batch-size 16 `
+  --model-dim 256 `
+  --encoder-layers 4 `
+  --heads 4 `
+  --feedforward-dim 1024 `
+  --learning-rate 3e-4 `
+  --weight-decay 1e-2 `
+  --time-reduction 4 `
+  --subsampling conv `
+  --device cuda
+```
+
+The sweep writes `trajectory_long.csv`, `trajectory_summary.csv`, and
+`sweep_runs.csv`. WER/CER trajectories are ASR performance measures and must
+not be presented as clinical intelligibility measurements.
 
 ---
 

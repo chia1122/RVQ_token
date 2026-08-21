@@ -52,14 +52,14 @@ python 04_Code/codec_reconstruction/reconstruct_speechtokenizer_prefixes.py \
   --output-dir 04_Code/codec_reconstruction/outputs/speechtokenizer_smoke \
   --config SpeechTokenizer/model_hub/speechtokenizer_hubert_avg/config.json \
   --checkpoint SpeechTokenizer/model_hub/speechtokenizer_hubert_avg/SpeechTokenizer.pt \
-  --layers 1,2,4,6,8 \
+  --layers 1,2,3,4,5,6,7,8 \
   --split all \
   --speakers F01 \
   --limit 1 \
   --device cuda
 ```
 
-Listen to all five WAV files and verify the summary reports five files and zero
+Listen to all eight WAV files and verify the summary reports eight files and zero
 failures.
 
 ## 4. Severe-speaker reconstruction and fixed-ASR evaluation
@@ -75,7 +75,7 @@ python 04_Code/codec_reconstruction/reconstruct_speechtokenizer_prefixes.py \
   --output-dir 04_Code/codec_reconstruction/outputs/speechtokenizer_severe \
   --config SpeechTokenizer/model_hub/speechtokenizer_hubert_avg/config.json \
   --checkpoint SpeechTokenizer/model_hub/speechtokenizer_hubert_avg/SpeechTokenizer.pt \
-  --layers 1,2,4,6,8 \
+  --layers 1,2,3,4,5,6,7,8 \
   --split all \
   --speakers F01,M01,M02,M04 \
   --device cuda
@@ -86,7 +86,7 @@ python 04_Code/codec_reconstruction/evaluate_with_faster_whisper.py \
   --reconstruction-index 04_Code/codec_reconstruction/outputs/speechtokenizer_severe/reconstruction_index.jsonl \
   --reconstruction-root 04_Code/codec_reconstruction/outputs/speechtokenizer_severe \
   --output-dir 04_Code/codec_reconstruction/asr_results/speechtokenizer_severe_large_v3 \
-  --conditions original,k1,k2,k4,k6,k8 \
+  --conditions auto \
   --split all \
   --speakers F01,M01,M02,M04 \
   --model large-v3 \

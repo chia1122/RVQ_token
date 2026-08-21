@@ -122,7 +122,7 @@ python -m rvq_asr.train_probe \
 
 First verify that pretrained K=4 materially improves TORGO validation/test CER
 over random initialization. Then repeat the complete pretrain/fine-tune process
-for K=1,2,4,6,8 and seeds 1337, 2026, and 3407.
+for every available K from 1 through N and seeds 1337, 2026, and 3407.
 
 Do not initialize a K=8 experiment from a checkpoint pretrained with active
 K=4. Although all embedding tables exist, Q5-Q8 were inactive and received no

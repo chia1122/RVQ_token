@@ -9,12 +9,13 @@ import json
 from collections import defaultdict
 from pathlib import Path
 
-from evaluate_with_faster_whisper import Scores
+from evaluate_with_faster_whisper import Scores, rvq_condition_from_row, rvq_condition_order
 
 
 def load(path: Path) -> dict[tuple[str, str], dict]:
-    rows = [json.loads(line) for line in path.open(encoding="utf-8") if line.strip()]
-    return {(row["condition"], row["utt_id"]): row for row in rows}
+    with path.open(encoding="utf-8") as handle:
+        rows = [json.loads(line) for line in handle if line.strip()]
+    return {(rvq_condition_from_row(row), row["utt_id"]): row for row in rows}
 
 
 def main() -> None:
@@ -31,16 +32,24 @@ def main() -> None:
     counts = defaultdict(int)
     metadata = {}
     for key in paired_keys:
+        rvq_condition = key[0]
         for codec, source in (("dac", dac), ("speechtokenizer", speech)):
             row = source[key]
-            group = (codec, row["condition"], row["speaker_id"])
+            group = (codec, rvq_condition, row["speaker_id"])
             groups[group].update(row["reference"], row["hypothesis"])
             counts[group] += 1
             metadata[row["speaker_id"]] = row["severity"]
     output_rows = []
-    for (codec, condition, speaker), scores in sorted(groups.items()):
+    condition_rank = {
+        value: index for index, value in enumerate(
+            rvq_condition_order(condition for _, condition, _ in groups)
+        )
+    }
+    for (codec, condition, speaker), scores in sorted(
+        groups.items(), key=lambda item: (item[0][0], condition_rank[item[0][1]], item[0][2])
+    ):
         output_rows.append({
-            "codec": codec, "condition": condition, "speaker_id": speaker,
+            "codec": codec, "rvq_condition": condition, "speaker_id": speaker,
             "severity": metadata[speaker], "utterances": counts[(codec, condition, speaker)],
             **scores.row(),
         })
