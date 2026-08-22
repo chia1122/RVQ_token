@@ -23,7 +23,7 @@
     },
     {
       "fold_id": "B",
-      "speakers": ["F04", "FC02"]
+      "speakers": ["F04", "MC03"]
     },
     {
       "fold_id": "C",
@@ -31,7 +31,7 @@
     },
     {
       "fold_id": "D",
-      "speakers": ["M01", "MC03"]
+      "speakers": ["M01", "FC02"]
     },
     {
       "fold_id": "E",

@@ -82,9 +82,9 @@ speaker。因此採用七個 folds，其中 fold G 包含兩位 dysarthric speak
 | Fold | Dysarthric speakers | Control speakers | Dysarthric severity | Estimated utterances |
 |---|---|---|---|---:|
 | A | F01 | MC01 | severe | 1,184 |
-| B | F04 | FC02 | mild | ≤1,208 |
+| B | F04 | MC03 | mild | ≤1,037 |
 | C | M04 | FC03 | severe | 1,228 |
-| D | M01 | MC03 | severe | 1,162 |
+| D | M01 | FC02 | severe | 1,333 |
 | E | M02 | MC04 | severe | 1,009 |
 | F | F03 | MC02 | moderate | 985 |
 | G | M03, M05 | FC01 | mild, moderate-to-severe | ≤1,009 |
@@ -102,6 +102,13 @@ Fold assignment 的設計目標為：
 3. fold utterance totals 儘量接近；
 4. 不以 utterance-level random split 取代 speaker-level split；
 5. 不因 fold balancing 修改任何 severity label。
+
+Control speaker assignment 經最小交換調整：Fold B 使用 MC03，Fold D 使用
+FC02。這可避免任何 fold 完全由 female speakers 組成，同時保留 condition
+coverage、speaker disjointness 與合理的 utterance-count balance。由於 7 folds
+只有 6 位 female speakers，不可能讓每個 fold 都同時包含 female 與 male；因此
+Fold E 仍為 all-male，這項 gender coverage limitation 必須保留在 audit 與結果
+解讀中。
 
 ---
 

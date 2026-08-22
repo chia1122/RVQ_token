@@ -52,6 +52,12 @@ class SpeakerFoldConfigTest(unittest.TestCase):
         }
         self.assertEqual(set(test_counts.values()), {1})
         self.assertEqual(set(valid_counts.values()), {1})
+        gender_sets = [
+            {self.metadata[speaker]["gender"] for speaker in fold["speakers"]}
+            for fold in folds
+        ]
+        self.assertNotIn({"female"}, gender_sets)
+        self.assertEqual(gender_sets.count({"male"}), 1)
 
     def test_versioned_metadata_changes_only_mild_protocol_fields(self):
         canonical = load_speaker_metadata(CANONICAL_METADATA_PATH)
