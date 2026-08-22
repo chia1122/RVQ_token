@@ -10,6 +10,74 @@ This tool converts the existing TORGO CSV index into normalized, speaker-indepen
 
 The current paper-based protocol labels `F01`, `M01`, `M02`, and `M04` as severe; `M05` as moderate-to-severe; `F03` as moderate; and `F04`/`M03` as mild/ignored. The latter two have `include_in_experiment=false`, so their selected-channel recordings are retained in the exclusion audit but omitted from the ASR manifests.
 
+## Versioned protocol including mild speakers
+
+The original metadata and fixed split remain available for Phase 1
+reproducibility. A separate protocol includes the two TORGO mild speakers F04
+and M03 without changing their severity labels:
+
+```text
+config/speaker_metadata_including_mild_v1.csv
+config/speaker_folds_including_mild_v1.json
+```
+
+This protocol contains 15 speakers: eight dysarthric and seven control. It uses
+seven speaker folds, with every included speaker appearing in exactly one fold.
+For each rotation, the current fold is test, the next fold is validation, and
+the other five folds are train. Every fold contains both speech conditions.
+
+Run a config-only audit from the repository root. This requires no TORGO audio,
+manifest, codec checkpoint, or GPU:
+
+```bash
+python 04_Code/torgo_manifest/audit_speaker_folds.py \
+  --speaker-metadata \
+    04_Code/torgo_manifest/config/speaker_metadata_including_mild_v1.csv \
+  --fold-config \
+    04_Code/torgo_manifest/config/speaker_folds_including_mild_v1.json \
+  --output-dir /tmp/torgo_fold_config_audit_v1
+```
+
+The audit refuses to overwrite a non-empty output directory. Use a fresh
+directory for each audit. It writes:
+
+```text
+fold_audit.json
+generated_splits/rotation_01_test_a.json
+generated_splits/rotation_02_test_b.json
+...
+generated_splits/rotation_07_test_g.json
+```
+
+Each generated split is compatible with `build_torgo_manifest.py`. Do not use
+the original Phase 1 manifest for a full mild-speaker audit: it lacks F04 and
+M03, and older generated copies may also predate the explicit `condition`
+schema. The auditor will reject either mismatch. First build a new manifest in
+a separate, versioned output directory using the versioned metadata and one of
+the generated split configs.
+
+After the new manifest has been built, audit its utterance/hour coverage and
+prompt overlap with a new output directory:
+
+```bash
+python 04_Code/torgo_manifest/audit_speaker_folds.py \
+  --speaker-metadata \
+    04_Code/torgo_manifest/config/speaker_metadata_including_mild_v1.csv \
+  --fold-config \
+    04_Code/torgo_manifest/config/speaker_folds_including_mild_v1.json \
+  --manifest \
+    04_Code/torgo_manifest/output_including_mild_v1/torgo_all.jsonl \
+  --excluded-samples \
+    04_Code/torgo_manifest/output_including_mild_v1/excluded_samples.csv \
+  --output-dir /tmp/torgo_fold_manifest_audit_v1
+```
+
+Manifest-aware mode additionally writes `fold_statistics.csv` and
+`prompt_overlap.csv`. The primary protocol is speaker-disjoint but permits
+prompt overlap and audits it explicitly. Severity results remain descriptive:
+moderate and moderate-to-severe each contain only one speaker. WER and CER are
+ASR performance metrics and must not be presented as clinical intelligibility.
+
 ## Draft build without audio
 
 Run from the repository root (the directory containing both `04_Code/` and

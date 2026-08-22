@@ -275,9 +275,9 @@ WER/CER 僅作 ASR performance 指標，不作 clinical intelligibility 解讀�
 
 ---
 
-## 11. Planned implementation files
+## 11. Fold-definition and audit implementation status
 
-Proposal 確認後，後續 implementation stage 預計新增：
+Fold-definition and audit stage 已新增：
 
 ```text
 04_Code/torgo_manifest/config/speaker_metadata_including_mild_v1.csv
@@ -286,21 +286,30 @@ Proposal 確認後，後續 implementation stage 預計新增：
 04_Code/torgo_manifest/test_audit_speaker_folds.py
 ```
 
-並更新：
+並更新操作文件：
 
 ```text
 04_Code/torgo_manifest/README.md
 ```
 
-實作前仍需再次檢查 `git status`，比較現況與本 proposal，提出逐步計畫並取得
-確認。建立 fold/audit 工具不應同時擴大為 training pipeline、sampler 或大規模
-codec adapter 重構。
+Audit CLI 提供：
+
+- config-only validation；
+- cyclic train/validation/test rotation generation；
+- builder-compatible split configs；
+- optional manifest coverage audit；
+- optional exclusions-by-reason audit；
+- prompt-overlap statistics；
+- non-empty output-directory overwrite protection。
+
+本階段未擴大為 training pipeline、sampler 或 codec adapter 重構，也未修改
+canonical metadata、fixed split、Phase 1 manifests 或 experiment results。
 
 ---
 
-## 12. Planned tests and smoke audit
+## 12. Tests and smoke-audit status
 
-後續 tests 至少包含：
+Synthetic tests 已涵蓋：
 
 1. 七個 folds 正確解析；
 2. included speakers 完整且不重複；
@@ -313,7 +322,22 @@ codec adapter 重構。
 9. prompt-overlap 統計正確；
 10. generated split configs 與既有 builder schema 相容；
 11. synthetic fixtures 不需要 TORGO audio、codec checkpoint 或 GPU；
-12. 使用正式 manifest 執行唯讀 audit smoke，輸出至 `/tmp` 或其他未追蹤目錄。
+12. config-only CLI smoke 輸出至暫存目錄。
+
+Manifest-aware synthetic smoke 已完成。正式 manifest-aware audit 尚未執行，因為
+目前 Phase 1 manifest 不包含 F04、M03；必須先在 Linux 工作站以 versioned
+metadata 重建 `output_including_mild_v1`。Audit 工具會拒絕把缺少這兩位 speakers
+的舊 manifest 當成新 protocol；較舊的 generated manifest 若缺少明確
+`condition` schema，也會在 coverage audit 前被拒絕。
+
+目前本地驗證結果：
+
+- fold/audit synthetic tests：11 passed；
+- 完整 `torgo_manifest` regression suite：22 passed；
+- config-only CLI smoke：passed，產生 7 個 split configs；
+- manifest-aware synthetic integration smoke：passed；
+- 舊 Phase 1 manifest negative smoke：依預期拒絕，且未留下 partial output；
+- 正式 TORGO mild-speaker manifest audit：尚未執行。
 
 不執行完整 GPU training，也不提交 TORGO audio、manifests、tokens、checkpoints
 或完整 experiment outputs。

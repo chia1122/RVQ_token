@@ -1,0 +1,49 @@
+{
+  "protocol_id": "torgo_including_mild_v1",
+  "description": "Seven speaker-disjoint folds including the TORGO mild speakers F04 and M03. The next fold in listed order is used for validation.",
+  "metadata": "speaker_metadata_including_mild_v1.csv",
+  "validation_strategy": "next_fold_cyclic",
+  "prompt_overlap_policy": "allowed_but_audited",
+  "required_speaker_metadata": {
+    "F04": {
+      "speaker_type": "dysarthric",
+      "severity": "mild",
+      "include_in_experiment": "true"
+    },
+    "M03": {
+      "speaker_type": "dysarthric",
+      "severity": "mild",
+      "include_in_experiment": "true"
+    }
+  },
+  "folds": [
+    {
+      "fold_id": "A",
+      "speakers": ["F01", "MC01"]
+    },
+    {
+      "fold_id": "B",
+      "speakers": ["F04", "FC02"]
+    },
+    {
+      "fold_id": "C",
+      "speakers": ["M04", "FC03"]
+    },
+    {
+      "fold_id": "D",
+      "speakers": ["M01", "MC03"]
+    },
+    {
+      "fold_id": "E",
+      "speakers": ["M02", "MC04"]
+    },
+    {
+      "fold_id": "F",
+      "speakers": ["F03", "MC02"]
+    },
+    {
+      "fold_id": "G",
+      "speakers": ["M03", "M05", "FC01"]
+    }
+  ]
+}
