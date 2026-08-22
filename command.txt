@@ -1,22 +1,33 @@
-PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
-python -m rvq_asr/train_probe_with_limits.py\
-  --token-index librispeech_pretraining/tokens_librispeech_all.jsonl \
-  --token-root librispeech_pretraining \
-  --output-dir rvq_asr/runs/librispeech_speechtokenizer_q1_smoke \
-  --num-rvq-layers 1 \
-  --epochs 1 \
-  --batch-size 2 \
-  --grad-accum-steps 8 \
+python -m rvq_asr.sweep_depths \
+  --token-index torgo_manifest/speechtokenizer_hubert_avg_tokens/tokens.jsonl \
+  --token-root torgo_manifest/speechtokenizer_hubert_avg_tokens \
+  --output-root rvq_asr/trajectories/phase1_r2 \
+  --codec speechtokenizer \
+  --depths auto \
+  --seeds 1337,2026,3407 \
+  --resume \
+  -- \
+  --epochs 30 \
+  --batch-size 8 \
   --model-dim 256 \
   --encoder-layers 4 \
   --heads 4 \
   --feedforward-dim 1024 \
+  --learning-rate 3e-4 \
+  --weight-decay 1e-2 \
   --time-reduction 2 \
   --subsampling conv \
-  --learning-rate 3e-4 \
-  --dropout 0.1 \
   --device cuda \
-  --seed 1337 \
-  --limit-train 1000 \
-  --limit-valid 100 \
-  --limit-test 100
+  2>&1 | tee rvq_asr/trajectories/phase1_r2/sweep.log
+
+
+watch -n 30 '
+echo "completed results:"
+find 04_Code/rvq_asr/trajectories/phase1_r2/speechtokenizer \
+  -name results.json | wc -l
+echo
+nvidia-smi --query-gpu=index,name,memory.used,memory.total,utilization.gpu \
+  --format=csv,noheader
+'
+
+tail -f 04_Code/rvq_asr/trajectories/phase1_r2/sweep.log
