@@ -1,0 +1,13 @@
+tmux new -s <rvq_phase1>
+tmux attach -t <rvq_phase1>
+
+
+
+watch -n 30 '
+echo "completed results:"
+find rvq_asr/trajectories/phase1_r2_cer_full/speechtokenizer \
+  -name results.json | wc -l
+echo
+nvidia-smi --query-gpu=index,name,memory.used,memory.total,utilization.gpu \
+  --format=csv,noheader
+'

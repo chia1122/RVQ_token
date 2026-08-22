@@ -1,7 +1,7 @@
 python -m rvq_asr.sweep_depths \
   --token-index torgo_manifest/speechtokenizer_hubert_avg_tokens/tokens.jsonl \
   --token-root torgo_manifest/speechtokenizer_hubert_avg_tokens \
-  --output-root rvq_asr/trajectories/phase1_r2 \
+  --output-root rvq_asr/trajectories/phase1_r2_cer_full \
   --codec speechtokenizer \
   --depths auto \
   --seeds 1337,2026,3407 \
@@ -9,6 +9,7 @@ python -m rvq_asr.sweep_depths \
   -- \
   --epochs 30 \
   --batch-size 8 \
+  --grad-accum-steps 1 \
   --model-dim 256 \
   --encoder-layers 4 \
   --heads 4 \
@@ -17,17 +18,5 @@ python -m rvq_asr.sweep_depths \
   --weight-decay 1e-2 \
   --time-reduction 2 \
   --subsampling conv \
-  --device cuda \
-  2>&1 | tee rvq_asr/trajectories/phase1_r2/sweep.log
-
-
-watch -n 30 '
-echo "completed results:"
-find 04_Code/rvq_asr/trajectories/phase1_r2/speechtokenizer \
-  -name results.json | wc -l
-echo
-nvidia-smi --query-gpu=index,name,memory.used,memory.total,utilization.gpu \
-  --format=csv,noheader
-'
-
-tail -f 04_Code/rvq_asr/trajectories/phase1_r2/sweep.log
+  --selection-metric cer \
+  --device cuda
