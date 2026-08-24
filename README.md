@@ -609,6 +609,38 @@ The sweep writes `trajectory_long.csv`, `trajectory_summary.csv`, and
 `sweep_runs.csv`. WER/CER trajectories are ASR performance measures and must
 not be presented as clinical intelligibility measurements.
 
+### Step 6 — Aggregate seven speaker-fold rotations
+
+After all seven CER-selected rotations pass their individual 24-run audits,
+combine them without rerunning training. Use a new output directory; the
+aggregator refuses to overwrite a non-empty directory and ignores a
+`rotation_00` smoke directory.
+
+```bash
+export PYTHONPATH="$PWD/04_Code"
+export PROTOCOL_TRAJECTORY_ROOT="$RVQ_ARTIFACT_ROOT/trajectories/torgo_including_mild_v1_cer_v1"
+export COMBINED_TRAJECTORY_ROOT="$RVQ_ARTIFACT_ROOT/trajectory_aggregates/torgo_including_mild_v1_cer_v1"
+
+python -m rvq_asr.aggregate_rotations \
+  --trajectory-root "$PROTOCOL_TRAJECTORY_ROOT" \
+  --output-dir "$COMBINED_TRAJECTORY_ROOT" \
+  --protocol-id torgo_including_mild_v1_cer_v1
+```
+
+The output separates three estimands:
+
+- `trajectory_run_summary.csv`: fold/run-macro means across the 21
+  rotation-seed results per depth;
+- `trajectory_pooled_micro_*.csv`: reference-count-weighted metrics pooled
+  across the seven test folds separately for each seed, followed by a
+  three-seed summary;
+- `trajectory_speaker_macro_*.csv`: equal-speaker means overall and within
+  condition/severity groups.
+
+`ctc_blank_frame_ratio` remains a fold/run- or speaker-macro metric because
+the existing result schema does not retain the valid-frame denominator needed
+for an exact pooled-micro value.
+
 ---
 
 # 7. Running Tests

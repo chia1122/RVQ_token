@@ -166,9 +166,10 @@ remain marked as planned unless separately implemented and audited.
 The formal manifest audit reported 7,785 utterances, 15 speakers, no missing
 audio, and valid fold coverage. The rotation-specific index audit reported
 seven 7,785-row indexes with no missing token files or metadata mismatches.
-Rotation 1 of the CER-selected depth trajectory was externally audited as
-24/24 valid. The repository does not contain full experiment artifacts, and
-completion of all seven rotations is not yet established.
+The CER-selected depth trajectory was externally audited as 168/168 valid
+runs across seven rotations, eight depths, and three seeds. The repository
+does not contain the full experiment artifacts. Cross-rotation aggregation is
+implemented, but its formal workstation output requires a separate audit.
 
 The primary protocol estimates ASR generalization to unseen speakers under a
 largely shared-prompt TORGO setting. It is not a prompt-disjoint generalization
@@ -224,7 +225,7 @@ inference cost must be reported.
 
 ### Stage 2 — Speaker-disjoint evaluation protocol
 
-**Status: partially completed**
+**Status: completed for the current predefined cyclic protocol**
 
 Use the current versioned 15-speaker distribution and seven cyclic folds. Every
 depth and fusion method must reuse the same train/validation/test speakers.
@@ -232,9 +233,10 @@ Validation alone selects checkpoints; test data must not tune thresholds,
 gating, hyperparameters, or stopping rules.
 
 Completed components are the predefined seven-fold config, cyclic rotation
-builder, leakage audit, manifest audit, and rotation-specific token indexes.
-The complete seven-rotation trajectory, speaker-macro aggregation, and any
-generic GroupKFold/LOSO implementation remain incomplete or planned.
+builder, leakage audit, manifest audit, rotation-specific token indexes, and
+the 168-run CER-selected trajectory. Cross-rotation aggregation code is
+implemented; its formal output still requires a workstation audit. A generic
+GroupKFold/LOSO implementation is not part of the completed protocol.
 
 **Exit criterion:** all rotations pass leakage and coverage audits, and all
 baseline methods can consume identical saved split assignments.
@@ -379,7 +381,7 @@ part of the first cross-codec replication.
 | Experiment family | Representation | Fusion | Split | Current status |
 |---|---|---|---|---|
 | Phase 1 pilot | cumulative discrete-learned Q1:QK | sqrt-normalized sum | one fixed speaker-disjoint split | completed |
-| Seven-rotation trajectory | cumulative discrete-learned Q1:QK | sqrt-normalized sum | seven cyclic speaker folds | partially completed |
+| Seven-rotation trajectory | cumulative discrete-learned Q1:QK | sqrt-normalized sum | seven cyclic speaker folds | completed; aggregation audit pending |
 | Individual diagnostic | individual discrete-learned QK | one active layer | same saved speaker folds | planned |
 | Fixed fusion | full discrete-learned RVQ | uniform, mean/sqrt-normalized, concat, static learned | same saved speaker folds | partially implemented; comparison planned |
 | Adaptive fusion | full discrete-learned RVQ | utterance-adaptive gating | same saved speaker folds | planned |
@@ -444,8 +446,8 @@ speaker-level, capacity, and efficiency analyses.
 
 ## 11. Immediate next steps
 
-1. Finish and audit the CER-selected seven-rotation cumulative-prefix baseline.
-2. Freeze its folds, seeds, capacity, budget, and selection protocol.
+1. Run and audit the cross-rotation run-macro, pooled-micro, and speaker-macro aggregation.
+2. Freeze the completed folds, seeds, capacity, budget, and selection protocol.
 3. Complete Stage 0 representation/provenance tables.
 4. Specify and implement a matched individual-layer sweep without changing the
    saved speaker folds.

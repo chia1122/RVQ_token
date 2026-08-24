@@ -47,9 +47,11 @@ As of 2026-08-24:
   token-index tooling are implemented and audited.
 - The cyclic protocol is speaker-disjoint, but it is not a generic GroupKFold,
   StratifiedGroupKFold, or LOSO implementation.
-- Rotation 1 of the CER-selected seven-rotation trajectory was externally
-  audited as 24/24 valid. Completion of all seven rotations is not established
-  by repository artifacts and must not yet be claimed.
+- The CER-selected seven-rotation trajectory was externally audited as
+  168/168 valid runs: seven rotations, eight depths, and three seeds.
+- Cross-rotation aggregation code is implemented with separate run-macro,
+  pooled-micro, and speaker-macro outputs; its formal workstation output still
+  requires a separate audit.
 - Individual-layer trajectories, concatenation baselines, utterance-adaptive
   gating, pathology-aware objectives, and cross-codec replication remain
   planned unless explicitly stated otherwise in the canonical roadmap.

@@ -356,9 +356,10 @@ repository 外的持久實驗儲存空間，不納入 Git。
   missing audio 為 0；
 - 七個 rotation-specific token indices audit：passed，每個 index 皆有 7,785 rows，
   未發現 missing token files 或 metadata mismatch；
-- Rotation 1 CER-selected formal trajectory：24/24 runs valid，且已產生 long-format
-  與 summary CSV；
-- 全部七個 rotations 的正式 trajectory：尚未在 repository 文件中確認完成。
+- 七個 CER-selected formal rotations：168/168 runs valid；每個 rotation 均為
+  24/24 valid，且皆有 long-format 與 summary CSV；
+- 跨 rotation aggregation 工具已實作；正式工作站 aggregation output 仍需另行
+  執行與 audit。
 
 後三項為工作站上外部 artifacts 的 audit 紀錄；repository 不保存 manifest JSONL、
 codec tokens、model outputs 或完整 audit outputs。它們不是由本次文件更新重新執行
@@ -372,8 +373,8 @@ codec tokens、model outputs 或完整 audit outputs。它們不是由本次文�
 ## 13. Recommended execution order
 
 1. 保留 versioned metadata、fold config 與 repository 外 artifacts 的 provenance。
-2. 完成並逐一 audit 尚未確認的 rotations；不可重用 Rotation 1 的 output directory。
-3. 彙整 speaker-macro、condition、severity 與 per-speaker 指標，保留 rotation、seed、
+2. 保留七個 rotations 的 168/168 valid audit，且不可重用任何既有 output directory。
+3. 執行並 audit speaker-macro、condition、severity 與 per-speaker 彙整，保留 rotation、seed、
    depth identifiers。
 4. 依 canonical roadmap 完成 Stage 0 representation extraction feasibility audit。
 5. 在 matched protocol 下建立 individual Q1–Q8 與固定 cumulative fusion baselines。

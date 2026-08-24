@@ -440,11 +440,12 @@ multilayer fusion 對多位 dysarthric speakers／phoneme categories 有一致�
 
 ## 12. Recommended next step
 
-1. 完成並audit七個speaker rotations的CER-selected cumulative-prefix baseline；
-2. 鎖定 folds、seeds、training budget、capacity與checkpoint-selection protocol；
-3. 完成 Stage 0 representation/provenance table；
-4. 建立 matched individual-layer 與 fixed-fusion baselines；
-5. 以 complementarity decision gate 決定是否進入 utterance-adaptive fusion。
+1. 合併並 audit 已完成的七個 speaker rotations（168/168 valid runs）；
+2. 分開報告 run-macro、pooled-micro 與 speaker-macro trajectory；
+3. 鎖定 folds、seeds、training budget、capacity 與 checkpoint-selection protocol；
+4. 完成 Stage 0 representation/provenance table；
+5. 建立 matched individual-layer 與 fixed-fusion baselines；
+6. 以 complementarity decision gate 決定是否進入 utterance-adaptive fusion。
 
 本 Phase 1 record 不新增mixed-effects model、clinical interpretation或probe
 結果。尚未實作的individual sweep、concatenation、adaptive gating與pathology-aware
