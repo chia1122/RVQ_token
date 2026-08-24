@@ -1,7 +1,9 @@
 # Phase 1 — SpeechTokenizer RVQ Depth Trajectory
 
-> **Record status:** completed fixed-split pilot and diagnostic evidence. This
-> document preserves the original metrics and checkpoint-selection comparison.
+> **Record status:** completed fixed-split pilot plus completed seven-fold
+> speaker-disjoint cumulative-prefix follow-up. This document preserves the
+> original metrics and checkpoint-selection comparison and records the formal
+> 168-run aggregation.
 > It does not establish the final pathology-aware fusion method, a clinical
 > information hierarchy, or the absence of linguistic information in later RVQ
 > layers. The current roadmap is
@@ -369,7 +371,151 @@ WER-selected trajectory 保留為 primary analysis；CER-selected trajectory 是
 
 ---
 
-## 10. Current interpretation
+## 10. Seven-fold CER-selected cumulative-prefix follow-up
+
+### 10.1 Protocol and aggregation audit
+
+正式 follow-up 使用 versioned 15-speaker protocol：8 位 dysarthric、7 位
+control speakers。七個 predefined cyclic folds 依序作 test，下一 fold 作
+validation，其餘 folds 作 train。所有 runs 使用 validation CER 選擇 checkpoint。
+
+完整矩陣為：
+
+```text
+7 rotations × 8 cumulative depths × 3 seeds = 168 runs
+```
+
+正式工作站 audit 結果：
+
+- 7/7 rotations 完成；
+- 168/168 runs 為 `valid`；
+- depth 1–8、seeds 1337／2026／3407 完整；
+- 15 位 speakers 全部恰好進入 test rotation；
+- combined long-format：12,240 rows；
+- run-summary：1,840 rows；
+- pooled-micro summary：1,656 rows；
+- speaker-macro summary：448 rows；
+- aggregation status：`valid`。
+
+三種 aggregation 不可互換：
+
+- **run-macro**：每個 depth 對 7 rotations × 3 seeds 的 21 個 test results
+  等權平均；
+- **pooled-micro**：先在每個 seed 內合併七個 test folds 的 numerator 與
+  denominator，再對三個 seeds 摘要；
+- **speaker-macro**：先讓每位 speaker 等權，再對三個 seeds 摘要。
+
+`ctc_blank_frame_ratio` 因既有 `results.json` 未保存 pooled aggregation 所需的
+`valid_frames` denominator，只保留 run/fold-macro 或 speaker-macro 結果，未偽裝成
+pooled-micro metric。
+
+### 10.2 Overall cumulative trajectory
+
+下表的 pooled-micro 與 speaker-macro 數值皆為三個 seed-level aggregates 的平均：
+
+| Depth | Pooled-micro WER | Pooled-micro CER | Speaker-macro WER | Speaker-macro CER |
+|---:|---:|---:|---:|---:|
+| 1 | 0.8857 | 0.4912 | 0.9007 | 0.5347 |
+| 2 | 0.9255 | 0.5252 | 0.9355 | 0.5648 |
+| 3 | 0.9490 | 0.5481 | 0.9568 | 0.5866 |
+| 4 | 0.9541 | 0.5571 | 0.9591 | 0.5946 |
+| 5 | 0.9633 | 0.5685 | 0.9689 | 0.6049 |
+| 6 | 0.9791 | 0.5787 | 0.9802 | 0.6129 |
+| 7 | 0.9752 | 0.5830 | 0.9767 | 0.6171 |
+| 8 | 0.9803 | 0.5866 | 0.9828 | 0.6205 |
+
+Q1 在四個 overall metrics 均為最佳 cumulative depth。K8 相對 K1：
+
+| Metric | K1 | K8 | K8 − K1 |
+|---|---:|---:|---:|
+| Pooled-micro WER | 0.8857 | 0.9803 | +0.0946 |
+| Pooled-micro CER | 0.4912 | 0.5866 | +0.0954 |
+| Speaker-macro WER | 0.9007 | 0.9828 | +0.0821 |
+| Speaker-macro CER | 0.5347 | 0.6205 | +0.0858 |
+
+Pooled-micro 與 speaker-macro 的方向一致，表示整體結論不是由 utterance 數較多的
+speaker 單獨造成。CER 隨 cumulative depth 由 K1 至 K8 持續增加；WER 在個別相鄰
+depth 有小幅波動，但 K2–K8 均高於 K1。
+
+### 10.3 Condition speaker-macro CER
+
+下表為每個 seed 先對該 condition 的 speakers 等權平均，再報告三 seeds 的
+mean ± SD：
+
+| Depth | Control CER | Dysarthric CER |
+|---:|---:|---:|
+| 1 | 0.4219 ± 0.0019 | 0.6334 ± 0.0035 |
+| 2 | 0.4606 ± 0.0023 | 0.6561 ± 0.0034 |
+| 3 | 0.4835 ± 0.0051 | 0.6768 ± 0.0034 |
+| 4 | 0.4968 ± 0.0028 | 0.6803 ± 0.0021 |
+| 5 | 0.5091 ± 0.0053 | 0.6888 ± 0.0055 |
+| 6 | 0.5213 ± 0.0015 | 0.6931 ± 0.0050 |
+| 7 | 0.5248 ± 0.0041 | 0.6979 ± 0.0023 |
+| 8 | 0.5317 ± 0.0049 | 0.6982 ± 0.0014 |
+
+Q1 同時是 control 與 dysarthric speaker-macro CER 的最佳 cumulative depth。
+K8−K1 分別為 control `+0.1098`、dysarthric `+0.0648`。兩 condition 的差距在
+較深 depth 縮小，是因 control CER 惡化較多，不代表 dysarthric ASR 改善或任何
+clinical fairness improvement。
+
+### 10.4 Speaker and rotation consistency
+
+每個 speaker 的 CER 先跨三 seeds 平均。15/15 speakers 的最佳 cumulative depth
+皆為 Q1，且沒有任何 speaker 在 K8 優於 K1：
+
+| Speaker | Test rotation | Best depth | CER K1 | CER K8 | K8 − K1 |
+|---|---:|---:|---:|---:|---:|
+| F01 | 1 | 1 | 0.6877 | 0.7510 | +0.0633 |
+| F03 | 6 | 1 | 0.5172 | 0.6072 | +0.0900 |
+| F04 | 2 | 1 | 0.5321 | 0.5856 | +0.0536 |
+| FC01 | 7 | 1 | 0.3001 | 0.4743 | +0.1741 |
+| FC02 | 4 | 1 | 0.3100 | 0.4485 | +0.1385 |
+| FC03 | 3 | 1 | 0.3781 | 0.5243 | +0.1462 |
+| M01 | 4 | 1 | 0.7608 | 0.7942 | +0.0334 |
+| M02 | 5 | 1 | 0.7455 | 0.7726 | +0.0271 |
+| M03 | 7 | 1 | 0.3217 | 0.4707 | +0.1490 |
+| M04 | 3 | 1 | 0.7243 | 0.7818 | +0.0574 |
+| M05 | 7 | 1 | 0.7781 | 0.8223 | +0.0442 |
+| MC01 | 1 | 1 | 0.3691 | 0.5007 | +0.1316 |
+| MC02 | 6 | 1 | 0.5665 | 0.5930 | +0.0265 |
+| MC03 | 2 | 1 | 0.6248 | 0.6617 | +0.0369 |
+| MC04 | 5 | 1 | 0.4046 | 0.5192 | +0.1146 |
+
+Speaker-level K8−K1 CER 增幅範圍為 `+0.0265` 至 `+0.1741`。Speaker 間仍有
+明顯差異，且部分 control speakers 的 CER 高於部分 dysarthric speakers，因此
+condition aggregate 不能取代 per-speaker reporting，也不能作 clinical severity
+或 intelligibility 解讀。
+
+七個 rotations 亦全部以 Q1 為最佳 cumulative depth，且 K8 均劣於 K1：
+
+| Rotation | Best depth | CER K1 | CER K8 | K8 − K1 |
+|---:|---:|---:|---:|---:|
+| 1 | 1 | 0.3967 | 0.5224 | +0.1257 |
+| 2 | 1 | 0.6024 | 0.6433 | +0.0409 |
+| 3 | 1 | 0.4510 | 0.5785 | +0.1275 |
+| 4 | 1 | 0.4301 | 0.5406 | +0.1105 |
+| 5 | 1 | 0.5319 | 0.6138 | +0.0819 |
+| 6 | 1 | 0.5394 | 0.6008 | +0.0614 |
+| 7 | 1 | 0.5316 | 0.6350 | +0.1034 |
+
+Rotation-level K8−K1 CER 增幅範圍為 `+0.0409` 至 `+0.1275`。因此目前固定
+cumulative fusion 的 degradation 並非由單一 speaker、rotation 或 seed 驅動。
+
+### 10.5 Meaning for the fusion roadmap
+
+正式七-fold結果確認：在 `discrete_learned`、`cumulative_q1_k`、
+`sqrt_normalized_sum` 與 validation-CER selection 設定下，加入更多 RVQ layers
+會一致降低 ASR performance。這是固定 cumulative fusion 的可靠 negative
+baseline，也是後續 complementarity diagnosis 的動機。
+
+然而，這仍無法區分「later layers 沒有可轉移 ASR 資訊」與「later layers 有互補
+資訊，但固定相加造成 destructive interference」。因此 adaptive-fusion decision
+gate 尚未通過；下一步必須先完成 matched individual Q1–Q8 與 fixed-fusion
+baselines。
+
+---
+
+## 11. Fixed-split pilot interpretation
 
 目前最保守且可支持的英文描述為：
 
@@ -399,7 +545,7 @@ WER-selected trajectory 保留為 primary analysis；CER-selected trajectory 是
 這些結果只支持目前模型與實驗設定下的 ASR performance 描述，不支持 clinical
 intelligibility、臨床診斷或 utterance-level severity 的推論。
 
-### 10.1 Meaning under the revised research direction
+### 11.1 Meaning under the revised research direction
 
 在新的研究方向中，Phase 1 的用途是診斷與方法動機：固定 cumulative fusion
 隨 depth 加深沒有改善 CER，且 checkpoint objective 會顯著改變深層結果。它支持
@@ -418,34 +564,37 @@ multilayer fusion 對多位 dysarthric speakers／phoneme categories 有一致�
 
 ---
 
-## 11. Limitations
+## 12. Limitations
 
 1. 每個 depth 只有三個 seeds。
-2. 使用單一固定 speaker-disjoint split。
-3. Test split 的 severity／speaker coverage 有限。
+2. 原 Phase 1 pilot 使用單一 fixed split；正式 follow-up 已改用七個
+   speaker-disjoint rotations，但整體仍只有 15 位 speakers。
+3. Severity speaker counts 不平衡；moderate 與 moderate-to-severe 各只有一位
+   speaker，因此 severity 結果只作描述性 reporting。
 4. 深層 WER 接近飽和，不適合作為唯一 checkpoint-selection signal。
 5. 多個 minimum-CER epochs 位於 epoch 27–30，仍可能存在 training-budget
    sensitivity。
-6. CER-selected severity coverage 只有 `control` 與 `moderate-to-severe`，且
-   speaker coverage 只有 FC03、M05、MC04，不代表其他 severity 或 speakers。
+6. 原 fixed-split CER sensitivity 的 coverage 只有 FC03、M05、MC04；七-fold
+   follow-up 改善 speaker coverage，但不消除小 corpus 與 severity imbalance。
 7. 尚未比較其他 token fusion mechanisms。
 8. 尚未執行 codec-native embedding probe 或 acoustic baseline。
 9. 沒有進行 mixed-effects analysis 或 statistical significance testing。
 10. CUDA runs 未啟用嚴格 deterministic mode；小幅 rerun 差異可能包含 GPU
     nondeterminism。
 11. WER/CER 不能解讀為 clinical intelligibility。
-12. `speaker_metadata.csv` 中仍有 citation TODO，未自行猜測或補寫來源。
+12. Severity label source 已由研究者確認為 TORGO 原始論文；本文件不自行補造
+    尚未記錄的作者、頁碼或表格細節。
 
 ---
 
-## 12. Recommended next step
+## 13. Recommended next step
 
-1. 合併並 audit 已完成的七個 speaker rotations（168/168 valid runs）；
-2. 分開報告 run-macro、pooled-micro 與 speaker-macro trajectory；
-3. 鎖定 folds、seeds、training budget、capacity 與 checkpoint-selection protocol；
-4. 完成 Stage 0 representation/provenance table；
-5. 建立 matched individual-layer 與 fixed-fusion baselines；
-6. 以 complementarity decision gate 決定是否進入 utterance-adaptive fusion。
+1. 保存並鎖定已通過 audit 的 168-run aggregation 與 experiment protocol；
+2. 完成 Stage 0 representation/provenance table；
+3. 使用相同 folds、seeds、capacity、optimizer、budget 與 CER selection 建立
+   matched individual Q1–Q8 trajectory；
+4. 比較 Q1、fixed normalized sum、concatenation 與 static learned weighting；
+5. 以 complementarity decision gate 決定是否進入 utterance-adaptive fusion。
 
 本 Phase 1 record 不新增mixed-effects model、clinical interpretation或probe
 結果。尚未實作的individual sweep、concatenation、adaptive gating與pathology-aware

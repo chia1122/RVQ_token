@@ -166,10 +166,26 @@ remain marked as planned unless separately implemented and audited.
 The formal manifest audit reported 7,785 utterances, 15 speakers, no missing
 audio, and valid fold coverage. The rotation-specific index audit reported
 seven 7,785-row indexes with no missing token files or metadata mismatches.
-The CER-selected depth trajectory was externally audited as 168/168 valid
-runs across seven rotations, eight depths, and three seeds. The repository
-does not contain the full experiment artifacts. Cross-rotation aggregation is
-implemented, but its formal workstation output requires a separate audit.
+The CER-selected depth trajectory and aggregation were externally audited as
+168/168 valid runs across seven rotations, eight depths, and three seeds. The
+aggregation contains 12,240 long-format rows and separate run-macro,
+pooled-micro, and speaker-macro summaries. The repository does not contain the
+full experiment artifacts.
+
+The formal cumulative-prefix baseline found Q1 to be the best depth for all
+15 speakers and all seven test rotations. No speaker or rotation obtained a
+lower CER at Q1:Q8 than at Q1. Overall pooled-micro CER increased from 0.4912
+at Q1 to 0.5866 at Q1:Q8; speaker-macro CER increased from 0.5347 to 0.6205.
+Control and dysarthric speaker-macro CER both favored Q1:
+
+| Depth | Control speaker-macro CER | Dysarthric speaker-macro CER |
+|---:|---:|---:|
+| Q1 | 0.4219 | 0.6334 |
+| Q1:Q8 | 0.5317 | 0.6982 |
+
+This establishes a consistent negative result for fixed cumulative
+sqrt-normalized fusion. It does not establish that individual later layers
+lack linguistic or complementary information.
 
 The primary protocol estimates ASR generalization to unseen speakers under a
 largely shared-prompt TORGO setting. It is not a prompt-disjoint generalization
@@ -214,10 +230,11 @@ Required matched baselines:
 6. necessary acoustic baselines, initially Log-Mel and a frozen
    pre-quantization encoder representation if faithfully available.
 
-The fixed-split Q1 and cumulative Q1:QK trajectories are complete pilot
-baselines. The model also contains fixed sqrt-normalized sum and static learned
-weights, but no full matched comparison has been completed. Individual-layer,
-concatenation, and acoustic baseline matrices remain planned.
+The fixed-split pilot and seven-fold Q1/cumulative Q1:QK trajectories are
+complete baselines. The model also contains fixed sqrt-normalized sum and
+static learned weights, but no full matched fusion comparison has been
+completed. Individual-layer, concatenation, and acoustic baseline matrices
+remain planned.
 
 **Fairness controls:** same folds, seeds, backbone, optimizer, training budget,
 checkpoint-selection metric, and effective batch size. Parameter counts and
@@ -234,8 +251,8 @@ gating, hyperparameters, or stopping rules.
 
 Completed components are the predefined seven-fold config, cyclic rotation
 builder, leakage audit, manifest audit, rotation-specific token indexes, and
-the 168-run CER-selected trajectory. Cross-rotation aggregation code is
-implemented; its formal output still requires a workstation audit. A generic
+the 168-run CER-selected trajectory. Formal run-macro, pooled-micro,
+speaker-macro, per-speaker, and per-rotation audits are complete. A generic
 GroupKFold/LOSO implementation is not part of the completed protocol.
 
 **Exit criterion:** all rotations pass leakage and coverage audits, and all
@@ -268,6 +285,12 @@ method improves identifiable dysarthric speakers/phonemes under matched
 evaluation. If later layers expose only speaker identity without transferable
 dysarthria-associated or linguistic utility, re-examine the representation and
 research hypothesis before implementing adaptive gating.
+
+**Current gate status: not passed.** The completed cumulative-prefix baseline
+shows that fixed sqrt-normalized addition degrades CER consistently across all
+speakers and rotations. Individual-layer and alternative fixed-fusion
+experiments are still required to distinguish absent complementarity from
+destructive fixed fusion.
 
 ### Stage 4 — Fixed fusion baselines
 
@@ -381,7 +404,7 @@ part of the first cross-codec replication.
 | Experiment family | Representation | Fusion | Split | Current status |
 |---|---|---|---|---|
 | Phase 1 pilot | cumulative discrete-learned Q1:QK | sqrt-normalized sum | one fixed speaker-disjoint split | completed |
-| Seven-rotation trajectory | cumulative discrete-learned Q1:QK | sqrt-normalized sum | seven cyclic speaker folds | completed; aggregation audit pending |
+| Seven-rotation trajectory | cumulative discrete-learned Q1:QK | sqrt-normalized sum | seven cyclic speaker folds | completed and aggregated |
 | Individual diagnostic | individual discrete-learned QK | one active layer | same saved speaker folds | planned |
 | Fixed fusion | full discrete-learned RVQ | uniform, mean/sqrt-normalized, concat, static learned | same saved speaker folds | partially implemented; comparison planned |
 | Adaptive fusion | full discrete-learned RVQ | utterance-adaptive gating | same saved speaker folds | planned |
@@ -446,13 +469,13 @@ speaker-level, capacity, and efficiency analyses.
 
 ## 11. Immediate next steps
 
-1. Run and audit the cross-rotation run-macro, pooled-micro, and speaker-macro aggregation.
-2. Freeze the completed folds, seeds, capacity, budget, and selection protocol.
-3. Complete Stage 0 representation/provenance tables.
-4. Specify and implement a matched individual-layer sweep without changing the
+1. Preserve and freeze the audited folds, seeds, capacity, budget, selection
+   protocol, and aggregation outputs.
+2. Complete Stage 0 representation/provenance tables.
+3. Specify and implement a matched individual-layer sweep without changing the
    saved speaker folds.
-5. Add concatenation plus projection and run the complete fixed-fusion matrix.
-6. Apply the Stage 3 decision gate before implementing utterance-adaptive
+4. Add concatenation plus projection and run the complete fixed-fusion matrix.
+5. Apply the Stage 3 decision gate before implementing utterance-adaptive
    pathology-aware fusion.
 
 No new probes, models, formal training commands, or experimental results are
