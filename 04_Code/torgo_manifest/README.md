@@ -146,6 +146,87 @@ Run tests with Bash or PowerShell:
 python -m unittest discover -s 04_Code/torgo_manifest -p "test_*.py"
 ```
 
+## Build rotation-specific token indexes
+
+After extracting one validated master token store, build lightweight indexes
+for every generated speaker rotation. The indexes share the same `.pt` token
+files: they preserve each master-relative `token_path` and change only the
+index row's `split` according to the rotation config. Do not copy the master
+token files seven times.
+
+The token payload may retain the split recorded during extraction. For RVQ ASR,
+the rotation-specific `tokens.jsonl` is authoritative for split, speaker,
+condition, severity, and transcript metadata; the shared payload supplies the
+codec codes.
+
+Linux Bash example from `04_Code/`:
+
+```bash
+export PYTHONDONTWRITEBYTECODE=1
+export RVQ_ARTIFACT_ROOT="$HOME/rvq_token_artifacts"
+
+MasterTokenRoot="$RVQ_ARTIFACT_ROOT/tokens/speechtokenizer_hubert_avg/torgo_including_mild_v1_master"
+GeneratedSplitsRoot="$RVQ_ARTIFACT_ROOT/protocols/torgo_including_mild_v1/generated_splits"
+RotationIndexRoot="$RVQ_ARTIFACT_ROOT/token_indices/speechtokenizer_hubert_avg/torgo_including_mild_v1"
+
+test -f "$MasterTokenRoot/tokens.jsonl"
+test -d "$GeneratedSplitsRoot"
+test ! -e "$RotationIndexRoot"
+
+python torgo_manifest/build_rotation_token_indices.py \
+  --master-token-index "$MasterTokenRoot/tokens.jsonl" \
+  --master-token-root "$MasterTokenRoot" \
+  --generated-splits-dir "$GeneratedSplitsRoot" \
+  --output-dir "$RotationIndexRoot"
+```
+
+The builder dynamically discovers `rotation_*.json`, validates full and
+disjoint speaker assignment, verifies every shared token path, and refuses to
+overwrite a non-empty output directory. It writes one `tokens.jsonl` per
+rotation plus `rotation_index_audit.json`. These generated indexes and audits
+are experiment artifacts and must remain outside Git.
+
+Inspect the result without loading model checkpoints or audio:
+
+```bash
+python -m json.tool "$RotationIndexRoot/rotation_index_audit.json"
+
+for index in "$RotationIndexRoot"/rotation_*/tokens.jsonl; do
+  printf '%s\t' "$(basename "$(dirname "$index")")"
+  wc -l < "$index"
+done
+```
+
+Use a rotation index with the unchanged master token root:
+
+```bash
+export PYTHONPATH="$PWD${PYTHONPATH:+:$PYTHONPATH}"
+
+python -m rvq_asr.sweep_depths \
+  --token-index "$RotationIndexRoot/rotation_01_test_a/tokens.jsonl" \
+  --token-root "$MasterTokenRoot" \
+  --output-root "$RVQ_ARTIFACT_ROOT/trajectories/rotation_01_test_a" \
+  --codec speechtokenizer \
+  --depths auto \
+  --seeds 1337,2026,3407 \
+  --dry-run \
+  -- \
+  --epochs 30 \
+  --batch-size 8 \
+  --model-dim 256 \
+  --encoder-layers 4 \
+  --heads 4 \
+  --feedforward-dim 1024 \
+  --learning-rate 3e-4 \
+  --weight-decay 1e-2 \
+  --time-reduction 2 \
+  --subsampling conv \
+  --device cuda
+```
+
+Keep a separate output root for every rotation. Complete seven-rotation
+training is a later experiment; index generation itself does not run training.
+
 ## Extract Meta EnCodec RVQ tokens
 
 Only use the final `output/torgo_all.jsonl`; do not extract from a draft whose
