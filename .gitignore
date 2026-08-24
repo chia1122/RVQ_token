@@ -16,3 +16,5 @@ __pycache__/
 04_Code/rvq_asr/__pycache__/
 04_Code/codec_reconstruction/__pycache__/
 04_Code/torgo_manifest/__pycache__/
+command.txt
+04_Code/torgo_manifest/__pycache__/build_torgo_manifest.cpython-39.pyc
