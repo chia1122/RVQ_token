@@ -20,3 +20,10 @@ python -m rvq_asr.sweep_depths \
   --subsampling conv \
   --selection-metric cer \
   --device cuda
+
+
+for Rotation in rotation_04_test_d rotation_05_test_e; do
+  Root="$ProtocolTrajectoryRoot/$Rotation"
+  Count="$(find "$Root" -type f -name results.json 2>/dev/null | wc -l)"
+  printf '%s\t%s/24\n' "$Rotation" "$Count"
+done

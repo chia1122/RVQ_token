@@ -2,21 +2,22 @@
 
 ## 1. Status and scope
 
-本文件記錄經確認的新 TORGO dataset protocol proposal。主要變更為將 F04 與
-M03 納入後續實驗，並建立新的 speaker-level cross-validation folds。
+本文件最初記錄經確認的 TORGO dataset protocol proposal；目前該 proposal 已落實為
+versioned metadata、七個預先定義的 speaker folds、cyclic rotations 與 audit 工具。
+主要變更是將 F04 與 M03 納入後續實驗。
 
 本 proposal 不回溯修改或覆蓋 Phase 1 的 fixed-split trajectory。Phase 1 結果
 仍代表原始 protocol；新 protocol 必須使用不同的 config、manifest output、token
 output 與 experiment output identifiers。
 
-本文件只定義研究設計。建立本文件時尚未修改：
+本文件保留 proposal 的設計依據。實作採用新的 versioned resources，且未修改：
 
-- `speaker_metadata.csv`；
-- `speaker_splits.json`；
-- TORGO manifests；
-- codec tokens；
-- training code；
-- Phase 1 experiment outputs。
+- canonical `speaker_metadata.csv`；
+- canonical `speaker_splits.json`；
+- Phase 1 manifests、codec tokens 與 experiment outputs。
+
+目前 protocol 的 canonical 研究路線與階段定位見
+[Pathology-aware RVQ Layer Fusion roadmap](PATHOLOGY_AWARE_RVQ_FUSION_ROADMAP.md)。
 
 ---
 
@@ -144,6 +145,15 @@ Fold E 仍為 all-male，這項 gender coverage limitation 必須保留在 audit
 ```
 
 每個 rotation/depth/seed 必須使用獨立 output directory，不能覆蓋其他 runs。
+
+### 5.1 Protocol classification
+
+目前實作是研究者預先定義的七個 speaker folds，加上
+`next_fold_cyclic` validation strategy。它保證 rotation 內的 train、validation、
+test speaker-disjoint，但不是由 sklearn 動態產生的 `GroupKFold` 或
+`StratifiedGroupKFold`，也不是每次只留一位 speaker 的 LOSO。後續報告必須使用
+「predefined seven-fold cyclic speaker-disjoint protocol」等準確名稱，不能將三者
+視為同一設計。
 
 ---
 
@@ -331,20 +341,28 @@ Synthetic tests 已涵蓋：
 11. synthetic fixtures 不需要 TORGO audio、codec checkpoint 或 GPU；
 12. config-only CLI smoke 輸出至暫存目錄。
 
-Manifest-aware synthetic smoke 已完成。正式 manifest-aware audit 尚未執行，因為
-目前 Phase 1 manifest 不包含 F04、M03；必須先在 Linux 工作站以 versioned
-metadata 重建 `output_including_mild_v1`。Audit 工具會拒絕把缺少這兩位 speakers
-的舊 manifest 當成新 protocol；較舊的 generated manifest 若缺少明確
-`condition` schema，也會在 coverage audit 前被拒絕。
+Manifest-aware synthetic smoke 已完成。其後已在 Linux 工作站以 versioned
+metadata 重建正式 manifest，並完成 manifest-aware audit。該 artifact 位於
+repository 外的持久實驗儲存空間，不納入 Git。
 
-目前本地驗證結果：
+已記錄的驗證結果分為 repository 測試與工作站實驗 audit：
 
 - fold/audit synthetic tests：11 passed；
 - 完整 `torgo_manifest` regression suite：22 passed；
 - config-only CLI smoke：passed，產生 7 個 split configs；
 - manifest-aware synthetic integration smoke：passed；
 - 舊 Phase 1 manifest negative smoke：依預期拒絕，且未留下 partial output；
-- 正式 TORGO mild-speaker manifest audit：尚未執行。
+- 正式 TORGO mild-speaker manifest audit：passed，共 7,785 utterances、15 speakers，
+  missing audio 為 0；
+- 七個 rotation-specific token indices audit：passed，每個 index 皆有 7,785 rows，
+  未發現 missing token files 或 metadata mismatch；
+- Rotation 1 CER-selected formal trajectory：24/24 runs valid，且已產生 long-format
+  與 summary CSV；
+- 全部七個 rotations 的正式 trajectory：尚未在 repository 文件中確認完成。
+
+後三項為工作站上外部 artifacts 的 audit 紀錄；repository 不保存 manifest JSONL、
+codec tokens、model outputs 或完整 audit outputs。它們不是由本次文件更新重新執行
+所得。
 
 不執行完整 GPU training，也不提交 TORGO audio、manifests、tokens、checkpoints
 或完整 experiment outputs。
@@ -353,15 +371,13 @@ metadata 重建 `output_including_mild_v1`。Audit 工具會拒絕把缺少這�
 
 ## 13. Recommended execution order
 
-1. 建立 versioned metadata，將 F04、M03 設為 included，補入實際 TORGO 論文
-   citation。
-2. 建立七-fold config 與 validation rotation。
-3. 完成 synthetic unit tests。
-4. 使用既有 manifest schema 進行 fold audit smoke。
-5. 以新的 versioned output directory 重建 manifest。
-6. 檢查實際 F04/M03 utterance exclusions、hours、condition、severity、gender 與
-   prompt overlap。
-7. 先跑一個 depth、一個 seed 的七 rotations CPU/GPU pipeline smoke。
-8. 確認 aggregation 正確後，才評估是否執行完整 168-run trajectory。
+1. 保留 versioned metadata、fold config 與 repository 外 artifacts 的 provenance。
+2. 完成並逐一 audit 尚未確認的 rotations；不可重用 Rotation 1 的 output directory。
+3. 彙整 speaker-macro、condition、severity 與 per-speaker 指標，保留 rotation、seed、
+   depth identifiers。
+4. 依 canonical roadmap 完成 Stage 0 representation extraction feasibility audit。
+5. 在 matched protocol 下建立 individual Q1–Q8 與固定 cumulative fusion baselines。
+6. 只有在 baseline 與 complementarity gate 通過後，才啟動 adaptive fusion。
 
-在新的 manifest audit 完成前，不應直接重用 Phase 1 tokens 或啟動完整 training。
+目前不需要重新建立已通過 audit 的 manifest。若重建，必須使用新的 versioned output
+directory，並重新執行完整 manifest、token-index 與 split audit。

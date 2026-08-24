@@ -1,3 +1,8 @@
+> **Roadmap status: historical Phase 1 specification.** 本文件保留原始需求，不再作為
+> 多階段研究的 canonical 終點。其內容對應新版 roadmap 的 Stage 0（representation
+> audit）、Stage 1（ASR baseline）與 Stage 2（cumulative depth trajectory）。目前
+> 研究方向見 [Pathology-aware RVQ Layer Fusion roadmap](PATHOLOGY_AWARE_RVQ_FUSION_ROADMAP.md)。
+
 請在目前的 RVQ_token repository 中完成第一階段開發。
 
 開始修改前，請先：

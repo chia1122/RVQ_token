@@ -1,3 +1,8 @@
+> **Roadmap status: revised and gated.** Severity probing 現屬 Stage 3 diagnostic
+> probe，並可在 Stage 9 作 exploratory analysis；仍受 speaker-level label、樣本數與
+> citation protocol 限制。本文件保留原始規格，不表示已有結果。Canonical 定義見
+> [Pathology-aware RVQ Layer Fusion roadmap](PATHOLOGY_AWARE_RVQ_FUSION_ROADMAP.md)。
+
 請完成第四階段：
 新增 speaker-level dysarthria severity probing pipeline。
 

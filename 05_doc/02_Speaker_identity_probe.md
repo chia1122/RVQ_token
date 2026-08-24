@@ -1,3 +1,8 @@
+> **Roadmap status: superseded as a standalone next stage.** Speaker identity probing
+> 現改列新版 roadmap 的 Stage 3 diagnostic probe，亦可在 Stage 9 作 privacy 分析；
+> 本文件保留原始規格，尚不代表正式實驗已完成。Canonical 定義見
+> [Pathology-aware RVQ Layer Fusion roadmap](PATHOLOGY_AWARE_RVQ_FUSION_ROADMAP.md)。
+
 請在目前的 RVQ_token repository 中完成第二階段：
 新增 speaker identity probing pipeline。
 

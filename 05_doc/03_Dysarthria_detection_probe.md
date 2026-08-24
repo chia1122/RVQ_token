@@ -1,3 +1,8 @@
+> **Roadmap status: revised.** 本 probe 現屬 Stage 3 diagnostic probe，並作為
+> Stage 6 pathology-aware fusion 的輔助分析；它不是 clinical diagnosis。本文件保留
+> 原始規格，尚不代表正式實驗已完成。Canonical 定義見
+> [Pathology-aware RVQ Layer Fusion roadmap](PATHOLOGY_AWARE_RVQ_FUSION_ROADMAP.md)。
+
 請完成第三階段：
 新增 control vs dysarthric detection probing pipeline。
 

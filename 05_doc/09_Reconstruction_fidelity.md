@@ -1,3 +1,9 @@
+> **Roadmap status: exploratory.** Reconstruction fidelity 與 representation/probe
+> trajectory 的關聯現列新版 roadmap 的 Stage 9，不是 adaptive fusion 的必要前置
+> 條件。本文件保留原始規格，尚不表示 correlation 或 causal 結論已建立。Canonical
+> 定義見
+> [Pathology-aware RVQ Layer Fusion roadmap](PATHOLOGY_AWARE_RVQ_FUSION_ROADMAP.md)。
+
 請完成第九階段：
 擴充 codec reconstruction evaluation，
 比較 reconstruction fidelity 與 information-probe trajectory。

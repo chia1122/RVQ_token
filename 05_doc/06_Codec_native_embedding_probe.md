@@ -1,3 +1,9 @@
+> **Roadmap status: revised.** Codec-native representation extraction 現先納入
+> Stage 0 feasibility audit，matched probing 屬 Stage 3，進一步表徵分析屬 Stage 9。
+> 必須與目前的 discrete learned embeddings 分開命名與比較。本文件保留原始規格，
+> 尚不代表 native extraction 已完成。Canonical 定義見
+> [Pathology-aware RVQ Layer Fusion roadmap](PATHOLOGY_AWARE_RVQ_FUSION_ROADMAP.md)。
+
 請完成第六階段：
 新增 frozen codec-native embedding representation，
 並與目前的 discrete learned embedding probe 分開比較。

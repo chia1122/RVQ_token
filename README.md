@@ -2,6 +2,23 @@
 
 Speech codec and Residual Vector Quantization (RVQ) experiments for dysarthric speech processing and automatic speech recognition (ASR).
 
+## Current research direction
+
+The current research direction is **Pathology-aware RVQ Layer Fusion for
+Dysarthric ASR**. Layer-wise ASR trajectories and information probes are used
+as diagnostic evidence and method motivation; they are not the final research
+endpoint. The proposed direction is to test whether utterance-adaptive fusion
+of RVQ layers can reduce dysarthric-speech CER without a clear degradation of
+control-speech CER.
+
+See the [research planning index](05_doc/README.md) and the canonical
+[Pathology-aware RVQ Fusion roadmap](05_doc/PATHOLOGY_AWARE_RVQ_FUSION_ROADMAP.md).
+
+The current direct-token depth trajectory uses task-trained discrete
+embeddings for cumulative Q1:QK prefixes. It must not be confused with an
+individual-QK trajectory or a frozen codec-native representation. WER and CER
+are ASR performance metrics, not clinical intelligibility measures.
+
 This repository contains tools for:
 
 - preparing the TORGO speech dataset;

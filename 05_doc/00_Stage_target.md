@@ -1,14 +1,43 @@
-## 各階段工作目的
+# Revised Stage Overview
 
-| 階段                              | 工作目的                                                                          |
-| ------------------------------- | ----------------------------------------------------------------------------- |
-| Stage 1：完整 RVQ trajectory       | 讓現有 pipeline 能完整執行 Q1、Q1:2……Q1:N，並分組彙整 linguistic 結果。                         |
-| Stage 2：Speaker probe           | 分析 speaker identity 在各 RVQ depth 的出現與飽和位置。                                    |
-| Stage 3：Dysarthria detection    | 分析 control／dysarthric 資訊主要存在於哪些 RVQ stages。                                   |
-| Stage 4：Severity probe          | 分析與 speaker-level dysarthria severity 相關的資訊如何隨 depth 改變。                      |
-| Stage 5：統計分析                    | 彙整多 seed／fold 結果，計算 marginal gain、saturation 與 condition × depth interaction。 |
-| Stage 6：Codec-native embedding  | 區分 codec 原生表徵資訊與下游任務重新學習出的資訊。                                                 |
-| Stage 7：Acoustic baselines      | 比較 Log-Mel、MFCC、encoder latent 與 RVQ，定位資訊在哪個階段流失。                             |
-| Stage 8：Codec adapter           | 統一 SpeechTokenizer、EnCodec、DAC 的程式介面，降低重複程式碼。                                 |
-| Stage 9：Reconstruction fidelity | 比較重建品質與 linguistic／speaker／clinical-information trajectory 是否同步。              |
+> **Status: superseded as an execution roadmap.** This file preserves the
+> mapping from the original Stage 1–9 plan to the current research direction.
+> The canonical plan is
+> [Pathology-aware RVQ Layer Fusion for Dysarthric ASR](PATHOLOGY_AWARE_RVQ_FUSION_ROADMAP.md).
+
+The original plan treated RVQ information probing as the endpoint. The revised
+plan treats probing as diagnosis and a decision gate for a pathology-aware
+fusion method.
+
+## Current Stage 0–9 roadmap
+
+| Current stage | Purpose | Status |
+|---|---|---|
+| Stage 0: Representation and protocol audit | Fix individual/cumulative terminology, embedding provenance, fusion equations, checkpoint selection, and split protocol. | partially completed |
+| Stage 1: Reliable linguistic baselines | Establish Q1, individual layers, cumulative prefixes, fixed full-RVQ fusion, concatenation, and acoustic baselines. | partially completed |
+| Stage 2: Speaker-disjoint evaluation | Use and complete the audited seven-fold cyclic protocol; do not call it GroupKFold/LOSO. | partially completed |
+| Stage 3: Complementarity diagnosis | Test whether later layers provide cross-speaker linguistic or dysarthric-ASR utility. | planned |
+| Stage 4: Fixed fusion baselines | Compare Q1, fixed sum/mean normalization, concatenation, and static learned weights. | partially implemented; comparison planned |
+| Stage 5: Utterance-adaptive fusion | Produce utterance-specific RVQ layer weights without requiring true pathology labels at inference. | planned |
+| Stage 6: Pathology-aware objectives | Compare CTC, auxiliary, invariant/alignment, and sparse-selection objectives. | planned |
+| Stage 7: Formal evaluation | Run matched ablations with dysarthric CER as the primary ASR metric. | planned |
+| Stage 8: Cross-codec generalization | Validate SpeechTokenizer first, then perform one EnCodec replication. | planned |
+| Stage 9: Extensions | Keep severity, reconstruction, bitrate, privacy, native embeddings, and additional codecs secondary. | planned/exploratory |
+
+## Old-to-new Stage mapping
+
+| Original stage | Revised location |
+|---|---|
+| Stage 1: Complete RVQ trajectory | Stage 0 representation audit, Stage 1 pilot baselines, and Stage 2 protocol foundation |
+| Stage 2: Speaker probe | Stage 3 complementarity diagnosis; possible Stage 9 speaker-privacy extension |
+| Stage 3: Dysarthria detection | Stage 3 diagnosis; possible Stage 6 auxiliary objective |
+| Stage 4: Severity probe | Stage 3 diagnostic or Stage 9 exploratory work |
+| Stage 5: Statistical analysis | Stage 7 formal evaluation |
+| Stage 6: Codec-native embedding | Stage 0 audit, Stage 3 diagnosis, or Stage 9 extension |
+| Stage 7: Acoustic baselines | Stage 1 reliable baselines |
+| Stage 8: Codec adapter | Minimal Stage 8 support; broad refactor deferred |
+| Stage 9: Reconstruction fidelity | Stage 9 exploratory extension |
+
+Historical Stage files remain in this directory and are marked
+`revised/superseded`. Their original requirements and results are not deleted.
 

@@ -1,3 +1,8 @@
+> **Roadmap status: revised.** Acoustic、pre-quantization 與 full-RVQ controls 現列
+> 新版 roadmap 的 Stage 1 baseline family。本文件保留原始規格，尚不表示所有
+> baselines 已實作或完成。Canonical 定義見
+> [Pathology-aware RVQ Layer Fusion roadmap](PATHOLOGY_AWARE_RVQ_FUSION_ROADMAP.md)。
+
 請完成第七階段：
 新增 acoustic features、pre-quantization encoder latent 和 full-RVQ baselines。
 

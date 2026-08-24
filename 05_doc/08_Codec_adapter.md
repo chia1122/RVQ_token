@@ -1,3 +1,9 @@
+> **Roadmap status: deferred and narrowed.** 原先的大規模 codec adapter 重構不再是
+> 近期研究主線；新版 roadmap 僅在 Stage 8、且確有多 codec replication 需求時進行
+> 最小 adapter 擴充。本文件保留原始介面構想，不代表目前承諾完整重構。Canonical
+> 定義見
+> [Pathology-aware RVQ Layer Fusion roadmap](PATHOLOGY_AWARE_RVQ_FUSION_ROADMAP.md)。
+
 請完成第八階段：
 將 SpeechTokenizer、EnCodec、DAC 的重複 extraction、
 native representation 和 reconstruction 邏輯重構成統一 codec adapter。

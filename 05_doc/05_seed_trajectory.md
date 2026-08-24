@@ -1,3 +1,8 @@
+> **Roadmap status: superseded as the final analysis stage.** 跨 seed、rotation 與
+> representation 的統計整合現改列新版 roadmap 的 Stage 7；本文件保留原始規格，
+> 其中 mixed-effects analysis 不屬於目前已完成範圍。Canonical 定義見
+> [Pathology-aware RVQ Layer Fusion roadmap](PATHOLOGY_AWARE_RVQ_FUSION_ROADMAP.md)。
+
 請完成第五階段：
 統一彙整 linguistic、speaker、dysarthria、severity 四種 probe 的
 RVQ information trajectories，並加入統計分析。

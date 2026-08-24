@@ -1,5 +1,12 @@
 # Phase 1 — SpeechTokenizer RVQ Depth Trajectory
 
+> **Record status:** completed fixed-split pilot and diagnostic evidence. This
+> document preserves the original metrics and checkpoint-selection comparison.
+> It does not establish the final pathology-aware fusion method, a clinical
+> information hierarchy, or the absence of linguistic information in later RVQ
+> layers. The current roadmap is
+> [Pathology-aware RVQ Layer Fusion for Dysarthric ASR](PATHOLOGY_AWARE_RVQ_FUSION_ROADMAP.md).
+
 ## 1. 研究目的
 
 本階段評估 SpeechTokenizer 不同 RVQ prefix depth 對 direct-token CTC ASR
@@ -26,6 +33,34 @@ empty hypothesis ratio 與 CTC blank-frame ratio 均為 ASR／CTC pipeline 指�
 
 每個 token sequence 使用 `[T, N]` 格式。Depth K 只使用前 K 個 RVQ
 codebooks。Token IDs 僅作為離散 indices，未直接相加或平均為數值特徵。
+
+### 2.1 Representation audit note
+
+根據完成本實驗時的實際程式：
+
+1. `RVQTokenDataset` 以 `codes[:, :K]` 讀入 Q1–QK；
+2. 未指定 `--active-rvq-layers` 時，`train_probe.py` 啟用 Q1–QK 全部 layers；
+3. 每個 layer 使用獨立、task-trained `nn.Embedding`；
+4. `layer_fusion=sum` 的 forward 計算為 learned embeddings 相加後除以
+   `sqrt(K)`。
+
+因此本文件 K1–K8 的正式 trajectory 應精確標示為：
+
+```text
+representation_mode = discrete_learned
+rvq_mode = cumulative
+condition(K) = cumulative_q1_k
+fusion = sqrt_normalized_sum
+```
+
+這不是 `individual_qk` trajectory，也不是 frozen codec-native cumulative
+latent。模型輸出的 equal `normalized_layer_weights` 是描述性權重；實際 forward
+scale 是 `1/sqrt(K)`，不是 arithmetic mean `1/K`。
+
+現有程式可透過明確指定 active layer 建立 individual learned-layer condition，
+但 Phase 1 sweep 未使用該模式，也未完成 matched individual Q1–Q8 trajectory。
+因此原始數值不需要改動，但其意義只限於 cumulative learned-prefix ASR
+performance。
 
 ---
 
@@ -325,8 +360,9 @@ delta = CER-selected result - WER-selected result
    objective trade-off：較低的 CER、較少的 blank/deletion under-generation，
    但較高的 WER。
 6. 即使採用 CER selection，depth 1 仍有最低 CER；depth 8 相較 depth 1
-   增加 0.1804。因此 deeper prefixes 在目前 normalized-sum direct-token CTC
-   設定下，未改善 character-level ASR performance。
+   增加 0.1804。因此 deeper cumulative learned prefixes 在目前
+   sqrt-normalized-sum direct-token CTC 設定下，未改善 character-level ASR
+   performance。這不證明 individual later layers 不含 linguistic 或互補資訊。
 
 WER-selected trajectory 保留為 primary analysis；CER-selected trajectory 是
 事後進行的 checkpoint-selection sensitivity analysis，不取代 primary result。
@@ -363,6 +399,23 @@ WER-selected trajectory 保留為 primary analysis；CER-selected trajectory 是
 這些結果只支持目前模型與實驗設定下的 ASR performance 描述，不支持 clinical
 intelligibility、臨床診斷或 utterance-level severity 的推論。
 
+### 10.1 Meaning under the revised research direction
+
+在新的研究方向中，Phase 1 的用途是診斷與方法動機：固定 cumulative fusion
+隨 depth 加深沒有改善 CER，且 checkpoint objective 會顯著改變深層結果。它支持
+後續進行 individual-layer、fixed-fusion 與 complementarity audit，但不支持下列
+推論：
+
+- Q1 已包含所有 dysarthric ASR 所需資訊；
+- Q2–Q8 沒有 linguistic information；
+- Q1–Q8 已形成 pathology information hierarchy；
+- 較高 CER 是由 pathological acoustic information 單獨造成；
+- adaptive pathology-aware fusion 必然優於固定 fusion。
+
+只有在 speaker-disjoint folds 中確認 later layers 具有互補資訊，或 fixed
+multilayer fusion 對多位 dysarthric speakers／phoneme categories 有一致改善後，
+才足以通過 adaptive-fusion decision gate。
+
 ---
 
 ## 11. Limitations
@@ -387,10 +440,12 @@ intelligibility、臨床診斷或 utterance-level severity 的推論。
 
 ## 12. Recommended next step
 
-1. 保存正式 sweep 的完整 `sweep_config.json`，並再次核對其中的 batch 與
-   selection 設定，完成 reproducibility metadata audit。
-2. 檢查 CER-selected best epochs 是否仍集中於 epoch 30；若是，再將 extended
-   training budget 規劃為獨立 sensitivity experiment，不與本次結果混合。
-3. 鎖定 Phase 1 的 primary 與 sensitivity 結果後，再依研究計畫進入下一階段。
+1. 完成並audit七個speaker rotations的CER-selected cumulative-prefix baseline；
+2. 鎖定 folds、seeds、training budget、capacity與checkpoint-selection protocol；
+3. 完成 Stage 0 representation/provenance table；
+4. 建立 matched individual-layer 與 fixed-fusion baselines；
+5. 以 complementarity decision gate 決定是否進入 utterance-adaptive fusion。
 
-本階段不進行 mixed-effects model、clinical interpretation 或新增 probes。
+本 Phase 1 record 不新增mixed-effects model、clinical interpretation或probe
+結果。尚未實作的individual sweep、concatenation、adaptive gating與pathology-aware
+objectives不得由本文件視為已完成。
