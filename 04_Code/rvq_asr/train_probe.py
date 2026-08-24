@@ -46,6 +46,42 @@ def parse_active_layers(value: str) -> list[int]:
     return layers
 
 
+def resolve_representation_metadata(
+    num_rvq_layers: int, active_layers: list[int], requested_mode: str | None,
+    condition_name: str | None, layer_fusion: str,
+) -> dict:
+    cumulative_layers = list(range(1, num_rvq_layers + 1))
+    inferred_mode = (
+        "cumulative" if active_layers == cumulative_layers
+        else "individual" if len(active_layers) == 1 else "custom"
+    )
+    rvq_mode = requested_mode or inferred_mode
+    if rvq_mode == "cumulative" and active_layers != cumulative_layers:
+        raise ValueError("cumulative rvq_mode requires active layers Q1 through QK")
+    if rvq_mode == "individual" and len(active_layers) != 1:
+        raise ValueError("individual rvq_mode requires exactly one active layer")
+    expected_condition = (
+        f"individual_q{active_layers[0]}" if rvq_mode == "individual"
+        else "cumulative_q1" if rvq_mode == "cumulative" and num_rvq_layers == 1
+        else f"cumulative_q1_{num_rvq_layers}" if rvq_mode == "cumulative"
+        else "custom_" + "_".join(f"q{layer}" for layer in active_layers)
+    )
+    if condition_name and rvq_mode != "custom" and condition_name != expected_condition:
+        raise ValueError(
+            f"condition_name={condition_name!r} does not match {expected_condition!r}"
+        )
+    condition = condition_name or expected_condition
+    return {
+        "rvq_mode": rvq_mode,
+        "condition": condition,
+        "effective_fusion": (
+            "single_active_layer" if len(active_layers) == 1
+            else "learned_weighted_sum" if layer_fusion == "learned"
+            else "sqrt_normalized_sum"
+        ),
+    }
+
+
 def set_seed(seed: int, deterministic: bool = False) -> None:
     if deterministic:
         os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
@@ -286,6 +322,10 @@ def main(args):
         raise ValueError(
             f"Active layer Q{max(active_layers)} exceeds --num-rvq-layers={args.num_rvq_layers}"
         )
+    representation = resolve_representation_metadata(
+        args.num_rvq_layers, active_layers, args.rvq_mode,
+        args.condition_name, args.layer_fusion,
+    )
     ctc_loss_device = args.ctc_loss_device
     if ctc_loss_device == "auto":
         ctc_loss_device = (
@@ -324,6 +364,18 @@ def main(args):
         active_rvq_layers=[layer - 1 for layer in active_layers],
         layer_fusion=args.layer_fusion,
     ).to(args.device)
+    embedding_parameters = [
+        sum(parameter.numel() for parameter in embedding.parameters())
+        for embedding in model.embeddings
+    ]
+    total_parameters = sum(parameter.numel() for parameter in model.parameters())
+    trainable_parameters = sum(
+        parameter.numel() for parameter in model.parameters() if parameter.requires_grad
+    )
+    active_embedding_parameters = sum(
+        embedding_parameters[layer - 1] for layer in active_layers
+    )
+    embedding_parameter_count = sum(embedding_parameters)
     if args.init_checkpoint:
         try:
             initial = torch.load(
@@ -383,6 +435,16 @@ def main(args):
         "overfit_samples": args.overfit_samples,
         "best_epoch": checkpoint["epoch"], "num_rvq_layers": args.num_rvq_layers,
         "active_rvq_layers": active_layers, "layer_fusion": args.layer_fusion,
+        "representation_mode": args.representation_mode,
+        **representation,
+        "parameter_counts": {
+            "total": total_parameters,
+            "trainable": trainable_parameters,
+            "embedding_total": embedding_parameter_count,
+            "active_embedding": active_embedding_parameters,
+            "inactive_embedding": embedding_parameter_count - active_embedding_parameters,
+            "non_embedding": total_parameters - embedding_parameter_count,
+        },
         "normalized_layer_weights": model.normalized_layer_weights(),
         "deterministic": args.deterministic,
         "selection_metric": args.selection_metric,
@@ -413,6 +475,12 @@ def parse_args():
         "--layer-fusion", choices=("sum", "learned"), default="sum",
         help="Fuse active layer embeddings by fixed normalized sum or learned softmax weights",
     )
+    parser.add_argument(
+        "--representation-mode", choices=("discrete_learned",),
+        default="discrete_learned",
+    )
+    parser.add_argument("--rvq-mode", choices=("cumulative", "individual", "custom"))
+    parser.add_argument("--condition-name")
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--batch-size", type=int, default=16)
     parser.add_argument("--num-workers", type=int, default=4)

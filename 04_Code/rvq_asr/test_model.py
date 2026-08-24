@@ -6,7 +6,7 @@ except ImportError:
     torch = None
 else:
     from rvq_asr.model import RVQTransformerCTC
-    from rvq_asr.train_probe import parse_active_layers
+    from rvq_asr.train_probe import parse_active_layers, resolve_representation_metadata
 
 
 @unittest.skipIf(torch is None, "PyTorch is not installed")
@@ -42,6 +42,30 @@ class LayerFusionTest(unittest.TestCase):
         self.assertEqual(parse_active_layers("1,5,6,7,8"), [1, 5, 6, 7, 8])
         with self.assertRaises(ValueError):
             parse_active_layers("1,1")
+
+    def test_individual_metadata_and_inactive_tokens(self):
+        metadata = resolve_representation_metadata(8, [8], "individual", None, "sum")
+        self.assertEqual(metadata["condition"], "individual_q8")
+        self.assertEqual(metadata["effective_fusion"], "single_active_layer")
+        cumulative = resolve_representation_metadata(1, [1], None, None, "sum")
+        self.assertEqual(cumulative["rvq_mode"], "cumulative")
+        self.assertEqual(cumulative["condition"], "cumulative_q1")
+        with self.assertRaises(ValueError):
+            resolve_representation_metadata(8, [7, 8], "individual", None, "sum")
+        with self.assertRaises(ValueError):
+            resolve_representation_metadata(
+                8, [8], "individual", "individual_q7", "sum"
+            )
+
+        model = self.make_model(active_rvq_layers=[7]).eval()
+        first = torch.zeros((1, 4, 8), dtype=torch.long)
+        second = first.clone()
+        second[:, :, :7] = 3
+        lengths = torch.tensor([4])
+        with torch.no_grad():
+            first_logits, _ = model(first, lengths)
+            second_logits, _ = model(second, lengths)
+        self.assertTrue(torch.equal(first_logits, second_logits))
 
 
 if __name__ == "__main__":

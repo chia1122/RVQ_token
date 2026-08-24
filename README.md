@@ -641,6 +641,58 @@ The output separates three estimands:
 the existing result schema does not retain the valid-frame denominator needed
 for an exact pooled-micro value.
 
+### Step 7 — Run matched individual RVQ layers
+
+The individual-layer sweep inherits every training argument, seed, codec, and
+rotation-specific token path from the completed cumulative trajectory. It
+does not accept replacement training hyperparameters.
+
+```bash
+export PYTHONPATH="$PWD/04_Code"
+export CUMULATIVE_ROOT="$RVQ_ARTIFACT_ROOT/trajectories/torgo_including_mild_v1_cer_v1"
+export INDIVIDUAL_ROOT="$RVQ_ARTIFACT_ROOT/trajectories/torgo_including_mild_v1_individual_cer_v1"
+
+python -m rvq_asr.sweep_individual_layers \
+  --reference-trajectory-root "$CUMULATIVE_ROOT" \
+  --output-root "$INDIVIDUAL_ROOT" \
+  --protocol-id torgo_including_mild_v1_individual_cer_v1 \
+  --dry-run > /tmp/torgo_individual_dry_run.json
+```
+
+Audit the dry run before removing `--dry-run`. The full SpeechTokenizer plan
+contains seven rotations, eight individual layers, and three seeds (168
+runs). Each QK run uses `--num-rvq-layers K --active-rvq-layers K` and writes
+to an `individual_qK/seed_*` directory. Resume an interrupted formal run with
+`--resume`; existing completed `results.json` files are skipped.
+
+After all runs are valid, aggregate them into a new directory:
+
+```bash
+export INDIVIDUAL_AGGREGATE_ROOT="$RVQ_ARTIFACT_ROOT/trajectory_aggregates/torgo_including_mild_v1_individual_cer_v1"
+
+python -m rvq_asr.aggregate_rotations \
+  --trajectory-root "$INDIVIDUAL_ROOT" \
+  --output-dir "$INDIVIDUAL_AGGREGATE_ROOT" \
+  --protocol-id torgo_including_mild_v1_individual_cer_v1
+```
+
+Pair the individual and cumulative long-format results only after both
+aggregation audits pass:
+
+```bash
+export CUMULATIVE_AGGREGATE_ROOT="$RVQ_ARTIFACT_ROOT/trajectory_aggregates/torgo_including_mild_v1_cer_v1"
+export COMPARISON_ROOT="$RVQ_ARTIFACT_ROOT/trajectory_comparisons/torgo_individual_vs_cumulative_cer_v1"
+
+python -m rvq_asr.compare_representations \
+  --cumulative-root "$CUMULATIVE_AGGREGATE_ROOT" \
+  --individual-root "$INDIVIDUAL_AGGREGATE_ROOT" \
+  --output-dir "$COMPARISON_ROOT"
+```
+
+For error metrics, a negative `delta_individual_minus_cumulative` favors the
+individual QK condition. The comparison does not by itself demonstrate that
+later layers are complementary under fusion.
+
 ---
 
 # 7. Running Tests

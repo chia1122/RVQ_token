@@ -49,6 +49,12 @@ def group_row(group_type, group_value, speakers, word_error):
 
 def build_fixture(root: Path) -> None:
     metadata = {}
+    token_root = root / "shared_tokens"
+    token_root.mkdir(parents=True, exist_ok=True)
+    token_index = root / "tokens.jsonl"
+    token_index.write_text(json.dumps({
+        "utt_id": "synthetic", "codebook_size": 1024, "num_codebooks": 8,
+    }) + "\n", encoding="utf-8")
     for rotation in range(1, 8):
         speakers = [
             (f"D{rotation}", "dysarthric", "severe"),
@@ -64,6 +70,8 @@ def build_fixture(root: Path) -> None:
             "depths": DEPTHS,
             "seeds": SEEDS,
             "train_args": ["--selection-metric", "cer", "--batch-size", "8"],
+            "token_index": str(token_index.resolve()),
+            "token_root": str(token_root.resolve()),
         }
         write_json(rotation_root / "sweep_config.json", config)
         run_rows = []

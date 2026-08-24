@@ -15,9 +15,14 @@ from pathlib import Path
 
 ROTATION_PATTERN = re.compile(r"rotation_(\d+)_test_(.+)")
 LONG_FIELDS = (
-    "protocol", "rotation", "test_fold", "codec", "depth", "seed",
+    "protocol", "rotation", "test_fold", "codec", "representation_mode",
+    "rvq_mode", "condition", "input_depth", "active_rvq_layers",
+    "effective_fusion", "parameter_count", "trainable_parameter_count",
+    "active_embedding_parameter_count", "non_embedding_parameter_count",
+    "depth", "seed",
     "group_type", "group_value", "metric", "value",
 )
+SUMMARY_REPRESENTATION_FIELDS = ("representation_mode", "rvq_mode", "condition")
 RATE_METRICS = (
     "wer", "cer", "substitution_rate", "deletion_rate", "insertion_rate",
     "empty_hypothesis_ratio", "ctc_blank_frame_ratio",
@@ -96,6 +101,8 @@ def validate_rotation_configs(
             "depths": config.get("depths"),
             "seeds": config.get("seeds"),
             "train_args": config.get("train_args"),
+            "representation_mode": config.get("representation_mode", "discrete_learned"),
+            "rvq_mode": config.get("rvq_mode", "cumulative"),
         }
         if not isinstance(comparable["depths"], list) or not comparable["depths"]:
             raise ValueError(f"Invalid depths in {config_path}")
@@ -208,9 +215,35 @@ def read_rotation_long(
             raise ValueError(f"Duplicate long-format key {key} in {path}")
         seen.add(key)
         observed_runs.add((depth, seed))
+        rvq_mode = row.get("rvq_mode") or config.get("rvq_mode", "cumulative")
+        condition = row.get("condition") or (
+            f"individual_q{depth}" if rvq_mode == "individual"
+            else "cumulative_q1" if depth == 1 else f"cumulative_q1_{depth}"
+        )
         output.append({
             "protocol": protocol, "rotation": rotation, "test_fold": test_fold,
-            "codec": row["codec"], "depth": depth, "seed": seed,
+            "codec": row["codec"],
+            "representation_mode": row.get("representation_mode")
+            or config.get("representation_mode", "discrete_learned"),
+            "rvq_mode": rvq_mode, "condition": condition,
+            "input_depth": int(row.get("input_depth") or depth),
+            "active_rvq_layers": row.get("active_rvq_layers") or (
+                str(depth) if rvq_mode == "individual"
+                else ",".join(str(layer) for layer in range(1, depth + 1))
+            ),
+            "effective_fusion": row.get("effective_fusion") or (
+                "single_active_layer" if depth == 1 or rvq_mode == "individual"
+                else "sqrt_normalized_sum"
+            ),
+            "parameter_count": row.get("parameter_count", ""),
+            "trainable_parameter_count": row.get("trainable_parameter_count", ""),
+            "active_embedding_parameter_count": row.get(
+                "active_embedding_parameter_count", ""
+            ),
+            "non_embedding_parameter_count": row.get(
+                "non_embedding_parameter_count", ""
+            ),
+            "depth": depth, "seed": seed,
             "group_type": row["group_type"], "group_value": row["group_value"],
             "metric": row["metric"], "value": value,
         })
@@ -241,7 +274,13 @@ def collect_results(
         ))
         for row in rows:
             depth, seed = int(row["depth"]), int(row["seed"])
-            run_root = rotation_path / str(config["codec"]) / f"k{depth}" / f"seed_{seed}"
+            rvq_mode = config.get("rvq_mode", "cumulative")
+            condition = (
+                f"individual_q{depth}" if rvq_mode == "individual"
+                else "cumulative_q1" if depth == 1 else f"cumulative_q1_{depth}"
+            )
+            run_name = condition if rvq_mode == "individual" else f"k{depth}"
+            run_root = rotation_path / str(config["codec"]) / run_name / f"seed_{seed}"
             result_path = run_root / "results.json"
             result = read_json(result_path)
             groups = result.get("test", {}).get("groups")
@@ -262,6 +301,11 @@ def collect_results(
                     "protocol": protocol, "rotation": rotation,
                     "test_fold": test_fold, "codec": config["codec"],
                     "depth": depth, "seed": seed,
+                    "representation_mode": result.get(
+                        "representation_mode", config.get("representation_mode", "discrete_learned")
+                    ),
+                    "rvq_mode": result.get("rvq_mode", rvq_mode),
+                    "condition": result.get("condition", condition),
                     "group_type": group_type, "group_value": group_value,
                     **group,
                 }
@@ -282,6 +326,8 @@ def collect_results(
         "depths": config["depths"],
         "seeds": config["seeds"],
         "selection_metric": expected_selection,
+        "representation_mode": config.get("representation_mode", "discrete_learned"),
+        "rvq_mode": config.get("rvq_mode", "cumulative"),
         "rotations": expected_rotations,
         "runs": run_count,
         "speakers": len(speaker_metadata),
@@ -337,7 +383,9 @@ def pooled_micro_rows(group_records: list[dict]) -> list[dict]:
                 f"{group['group_value']}; missing {missing}"
             )
         key = (
-            group["protocol"], group["codec"], int(group["depth"]), int(group["seed"]),
+            group["protocol"], group["codec"],
+            group["representation_mode"], group["rvq_mode"], group["condition"],
+            int(group["depth"]), int(group["seed"]),
             group["group_type"], group["group_value"],
         )
         utterances = int(group["utterances"])
@@ -372,8 +420,10 @@ def pooled_micro_rows(group_records: list[dict]) -> list[dict]:
         for metric, (numerator, denominator) in values.items():
             value = numerator if denominator is None else numerator / denominator if denominator else 0.0
             output.append({
-                "protocol": key[0], "codec": key[1], "depth": key[2], "seed": key[3],
-                "group_type": key[4], "group_value": key[5], "metric": metric,
+                "protocol": key[0], "codec": key[1],
+                "representation_mode": key[2], "rvq_mode": key[3], "condition": key[4],
+                "depth": key[5], "seed": key[6],
+                "group_type": key[7], "group_value": key[8], "metric": metric,
                 "value": value, "numerator": numerator,
                 "denominator": "" if denominator is None else denominator,
                 "n_rotations": len(rotations[key]),
@@ -391,7 +441,11 @@ def speaker_macro_rows(
         speaker = group["group_value"]
         if speaker not in speaker_metadata:
             raise ValueError(f"Missing metadata for speaker {speaker}")
-        key = (group["protocol"], group["codec"], int(group["depth"]), int(group["seed"]))
+        key = (
+            group["protocol"], group["codec"], group["representation_mode"],
+            group["rvq_mode"], group["condition"],
+            int(group["depth"]), int(group["seed"]),
+        )
         speakers[key].append(group)
     output = []
     for key in sorted(speakers):
@@ -414,7 +468,9 @@ def speaker_macro_rows(
                 if len(values) != len(partition):
                     continue
                 output.append({
-                    "protocol": key[0], "codec": key[1], "depth": key[2], "seed": key[3],
+                    "protocol": key[0], "codec": key[1],
+                    "representation_mode": key[2], "rvq_mode": key[3], "condition": key[4],
+                    "depth": key[5], "seed": key[6],
                     "group_type": group_type, "group_value": group_value,
                     "metric": metric, "value": statistics.fmean(values),
                     "n_speakers": len(values),
@@ -443,29 +499,34 @@ def aggregate(args: argparse.Namespace) -> dict:
     )
     run_summary = summarize_rows(
         combined,
-        ("protocol", "codec", "depth", "group_type", "group_value", "metric"),
+        ("protocol", "codec", *SUMMARY_REPRESENTATION_FIELDS, "depth",
+         "group_type", "group_value", "metric"),
     )
     pooled = pooled_micro_rows(groups)
     pooled_summary = summarize_rows(
         pooled,
-        ("protocol", "codec", "depth", "group_type", "group_value", "metric"),
+        ("protocol", "codec", *SUMMARY_REPRESENTATION_FIELDS, "depth",
+         "group_type", "group_value", "metric"),
     )
     speaker_macro = speaker_macro_rows(groups, metadata)
     speaker_macro_summary = summarize_rows(
         speaker_macro,
-        ("protocol", "codec", "depth", "group_type", "group_value", "metric"),
+        ("protocol", "codec", *SUMMARY_REPRESENTATION_FIELDS, "depth",
+         "group_type", "group_value", "metric"),
     )
     prepare_output_dir(args.output_dir)
     write_csv(args.output_dir / "trajectory_long.csv", combined, LONG_FIELDS)
     summary_fields = (
-        "protocol", "codec", "depth", "group_type", "group_value", "metric",
+        "protocol", "codec", *SUMMARY_REPRESENTATION_FIELDS, "depth",
+        "group_type", "group_value", "metric",
         "mean", "sd", "n_valid", "n_rotations",
     )
     write_csv(args.output_dir / "trajectory_run_summary.csv", run_summary, summary_fields)
     write_csv(
         args.output_dir / "trajectory_pooled_micro_by_seed.csv", pooled,
         (
-            "protocol", "codec", "depth", "seed", "group_type", "group_value",
+            "protocol", "codec", *SUMMARY_REPRESENTATION_FIELDS,
+            "depth", "seed", "group_type", "group_value",
             "metric", "value", "numerator", "denominator", "n_rotations",
         ),
     )
@@ -476,7 +537,8 @@ def aggregate(args: argparse.Namespace) -> dict:
     write_csv(
         args.output_dir / "trajectory_speaker_macro_by_seed.csv", speaker_macro,
         (
-            "protocol", "codec", "depth", "seed", "group_type", "group_value",
+            "protocol", "codec", *SUMMARY_REPRESENTATION_FIELDS,
+            "depth", "seed", "group_type", "group_value",
             "metric", "value", "n_speakers", "n_rotations",
         ),
     )

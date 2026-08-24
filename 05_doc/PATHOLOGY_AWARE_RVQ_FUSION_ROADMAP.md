@@ -124,10 +124,11 @@ than assuming N=8.
 
 ### 4.4 Current support boundaries
 
-- An explicitly configured `--active-rvq-layers K` can select an individual
+- An explicitly configured `--active-rvq-layers K` selects an individual
   learned-embedding layer when the input includes that layer.
-- The current depth sweep forbids overriding `--active-rvq-layers`; a formal
-  individual-layer sweep is not implemented.
+- A reference-config-driven individual-layer sweep is implemented. It derives
+  folds, seeds, optimizer, budget, capacity, and CER selection from the
+  completed cumulative configs. Formal individual Q1–Q8 runs remain pending.
 - `layer_fusion=learned` learns one global softmax weight per active layer. It
   is static learned fusion, not utterance-adaptive gating.
 - Concatenation plus projection is not implemented.
@@ -233,8 +234,9 @@ Required matched baselines:
 The fixed-split pilot and seven-fold Q1/cumulative Q1:QK trajectories are
 complete baselines. The model also contains fixed sqrt-normalized sum and
 static learned weights, but no full matched fusion comparison has been
-completed. Individual-layer, concatenation, and acoustic baseline matrices
-remain planned.
+completed. Individual-layer sweep infrastructure is implemented, but its
+formal 168-run matrix has not been executed. Concatenation and acoustic
+baseline matrices remain planned.
 
 **Fairness controls:** same folds, seeds, backbone, optimizer, training budget,
 checkpoint-selection metric, and effective batch size. Parameter counts and
@@ -405,16 +407,17 @@ part of the first cross-codec replication.
 |---|---|---|---|---|
 | Phase 1 pilot | cumulative discrete-learned Q1:QK | sqrt-normalized sum | one fixed speaker-disjoint split | completed |
 | Seven-rotation trajectory | cumulative discrete-learned Q1:QK | sqrt-normalized sum | seven cyclic speaker folds | completed and aggregated |
-| Individual diagnostic | individual discrete-learned QK | one active layer | same saved speaker folds | planned |
+| Individual diagnostic | individual discrete-learned QK | one active layer | same saved speaker folds | implemented; formal runs pending |
 | Fixed fusion | full discrete-learned RVQ | uniform, mean/sqrt-normalized, concat, static learned | same saved speaker folds | partially implemented; comparison planned |
 | Adaptive fusion | full discrete-learned RVQ | utterance-adaptive gating | same saved speaker folds | planned |
 | Objective ablation | adaptive representation | CTC and auxiliary/sparse variants | same saved speaker folds | planned |
 | Cross-codec replication | codec-specific faithful representation | selected fusion | same protocol where feasible | planned |
 | Codec-native analysis | frozen native vectors | codec-defined individual/cumulative | diagnostic protocol | planned/exploratory |
 
-Commands for individual sweeps, concatenation, adaptive gating, auxiliary
-objectives, and cross-codec fusion are intentionally omitted: those features
-are not currently implemented and must not be presented as executable.
+Commands for concatenation, adaptive gating, auxiliary objectives, and
+cross-codec fusion are intentionally omitted: those features are not currently
+implemented and must not be presented as executable. The individual sweep has
+an executable reference-config-driven CLI documented in the repository README.
 
 ## 8. Success criteria
 
@@ -472,10 +475,11 @@ speaker-level, capacity, and efficiency analyses.
 1. Preserve and freeze the audited folds, seeds, capacity, budget, selection
    protocol, and aggregation outputs.
 2. Complete Stage 0 representation/provenance tables.
-3. Specify and implement a matched individual-layer sweep without changing the
-   saved speaker folds.
-4. Add concatenation plus projection and run the complete fixed-fusion matrix.
-5. Apply the Stage 3 decision gate before implementing utterance-adaptive
+3. Dry-run, smoke-test, and execute the implemented matched individual-layer
+   sweep without changing the saved speaker folds.
+4. Aggregate and pair individual QK with cumulative Q1:QK results.
+5. Add concatenation plus projection and run the complete fixed-fusion matrix.
+6. Apply the Stage 3 decision gate before implementing utterance-adaptive
    pathology-aware fusion.
 
 No new probes, models, formal training commands, or experimental results are

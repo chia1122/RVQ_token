@@ -21,6 +21,12 @@ METRICS = (
     "substitution_rate", "deletion_rate", "insertion_rate",
     "empty_hypothesis_ratio", "ctc_blank_frame_ratio",
 )
+REPRESENTATION_FIELDS = (
+    "representation_mode", "rvq_mode", "condition", "input_depth",
+    "active_rvq_layers", "effective_fusion", "parameter_count",
+    "trainable_parameter_count", "active_embedding_parameter_count",
+    "non_embedding_parameter_count",
+)
 FORBIDDEN_TRAIN_ARGS = {
     "--token-index", "--token-root", "--output-dir", "--num-rvq-layers", "--seed",
     "--active-rvq-layers", "--layer-fusion",
@@ -154,6 +160,27 @@ def collect_long_rows(runs: list[RunSpec]) -> tuple[list[dict], list[dict]]:
             result = json.loads(result_path.read_text(encoding="utf-8"))
             test_metrics = result["test"]
             groups = test_metrics.get("groups") or legacy_groups(test_metrics)
+            representation = {}
+            if result.get("representation_mode"):
+                parameter_counts = result.get("parameter_counts", {})
+                representation = {
+                    "representation_mode": result["representation_mode"],
+                    "rvq_mode": result.get("rvq_mode", ""),
+                    "condition": result.get("condition", ""),
+                    "input_depth": result.get("num_rvq_layers", run.depth),
+                    "active_rvq_layers": ",".join(
+                        str(layer) for layer in result.get("active_rvq_layers", [])
+                    ),
+                    "effective_fusion": result.get("effective_fusion", ""),
+                    "parameter_count": parameter_counts.get("total", ""),
+                    "trainable_parameter_count": parameter_counts.get("trainable", ""),
+                    "active_embedding_parameter_count": parameter_counts.get(
+                        "active_embedding", ""
+                    ),
+                    "non_embedding_parameter_count": parameter_counts.get(
+                        "non_embedding", ""
+                    ),
+                }
             added = 0
             for group in groups:
                 for metric in METRICS:
@@ -161,6 +188,7 @@ def collect_long_rows(runs: list[RunSpec]) -> tuple[list[dict], list[dict]]:
                     if isinstance(value, (int, float)) and math.isfinite(float(value)):
                         long_rows.append({
                             "codec": run.codec, "depth": run.depth, "seed": run.seed,
+                            **representation,
                             "group_type": group["group_type"],
                             "group_value": group["group_value"],
                             "metric": metric, "value": value,
@@ -168,6 +196,7 @@ def collect_long_rows(runs: list[RunSpec]) -> tuple[list[dict], list[dict]]:
                         added += 1
             statuses.append({
                 "codec": run.codec, "depth": run.depth, "seed": run.seed,
+                **representation,
                 "status": "valid" if added else "no_metrics",
                 "result_path": str(result_path),
             })
@@ -183,16 +212,25 @@ def collect_long_rows(runs: list[RunSpec]) -> tuple[list[dict], list[dict]]:
 def summarize_long_rows(long_rows: list[dict]) -> list[dict]:
     grouped: dict[tuple, list[float]] = {}
     for row in long_rows:
+        representation = tuple(row.get(field, "") for field in REPRESENTATION_FIELDS)
         key = (
-            row["codec"], row["depth"], row["group_type"],
+            row["codec"], row["depth"], *representation, row["group_type"],
             row["group_value"], row["metric"],
         )
         grouped.setdefault(key, []).append(float(row["value"]))
     summary = []
     for key, values in sorted(grouped.items()):
+        representation_values = key[2:2 + len(REPRESENTATION_FIELDS)]
+        representation = (
+            {field: value for field, value in zip(REPRESENTATION_FIELDS, representation_values)}
+            if any(value != "" for value in representation_values) else {}
+        )
         summary.append({
-            "codec": key[0], "depth": key[1], "group_type": key[2],
-            "group_value": key[3], "metric": key[4],
+            "codec": key[0], "depth": key[1],
+            **representation,
+            "group_type": key[2 + len(REPRESENTATION_FIELDS)],
+            "group_value": key[3 + len(REPRESENTATION_FIELDS)],
+            "metric": key[4 + len(REPRESENTATION_FIELDS)],
             "mean": statistics.fmean(values),
             "sd": statistics.stdev(values) if len(values) > 1 else "",
             "n_valid": len(values),
@@ -211,17 +249,23 @@ def write_csv(path: Path, rows: list[dict], fieldnames: list[str]) -> None:
 def write_trajectory_outputs(output_root: Path, runs: list[RunSpec]) -> tuple[int, int]:
     long_rows, statuses = collect_long_rows(runs)
     summary_rows = summarize_long_rows(long_rows)
+    include_representation = any(
+        row.get("representation_mode") for row in long_rows
+    )
+    representation_fields = list(REPRESENTATION_FIELDS) if include_representation else []
     write_csv(
         output_root / "trajectory_long.csv", long_rows,
-        ["codec", "depth", "seed", "group_type", "group_value", "metric", "value"],
+        ["codec", "depth", "seed", *representation_fields,
+         "group_type", "group_value", "metric", "value"],
     )
     write_csv(
         output_root / "trajectory_summary.csv", summary_rows,
-        ["codec", "depth", "group_type", "group_value", "metric", "mean", "sd", "n_valid"],
+        ["codec", "depth", *representation_fields,
+         "group_type", "group_value", "metric", "mean", "sd", "n_valid"],
     )
     write_csv(
         output_root / "sweep_runs.csv", statuses,
-        ["codec", "depth", "seed", "status", "result_path"],
+        ["codec", "depth", "seed", *representation_fields, "status", "result_path"],
     )
     return len(long_rows), len(summary_rows)
 

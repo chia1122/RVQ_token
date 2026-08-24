@@ -591,8 +591,8 @@ multilayer fusion 對多位 dysarthric speakers／phoneme categories 有一致�
 
 1. 保存並鎖定已通過 audit 的 168-run aggregation 與 experiment protocol；
 2. 完成 Stage 0 representation/provenance table；
-3. 使用相同 folds、seeds、capacity、optimizer、budget 與 CER selection 建立
-   matched individual Q1–Q8 trajectory；
+3. 使用已實作的 reference-config-driven sweep，在相同 folds、seeds、capacity、
+   optimizer、budget 與 CER selection 下執行 matched individual Q1–Q8 trajectory；
 4. 比較 Q1、fixed normalized sum、concatenation 與 static learned weighting；
 5. 以 complementarity decision gate 決定是否進入 utterance-adaptive fusion。
 

@@ -49,12 +49,14 @@ As of 2026-08-24:
   StratifiedGroupKFold, or LOSO implementation.
 - The CER-selected seven-rotation trajectory was externally audited as
   168/168 valid runs: seven rotations, eight depths, and three seeds.
-- Cross-rotation aggregation code is implemented with separate run-macro,
-  pooled-micro, and speaker-macro outputs; its formal workstation output still
-  requires a separate audit.
-- Individual-layer trajectories, concatenation baselines, utterance-adaptive
+- Cross-rotation aggregation is complete with audited run-macro, pooled-micro,
+  speaker-macro, per-speaker, and per-rotation outputs.
+- Reference-config-driven individual Q1–QN sweep and paired representation
+  comparison tooling are implemented; formal individual runs are not yet
+  complete.
+- Formal individual-layer results, concatenation baselines, utterance-adaptive
   gating, pathology-aware objectives, and cross-codec replication remain
-  planned unless explicitly stated otherwise in the canonical roadmap.
+  pending unless explicitly stated otherwise in the canonical roadmap.
 
 WER and CER are ASR performance metrics. They are not clinical intelligibility
 scores. Dysarthria- or severity-associated probes are not clinical diagnostic
