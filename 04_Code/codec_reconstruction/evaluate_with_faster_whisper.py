@@ -9,6 +9,7 @@ import json
 import re
 import unicodedata
 from collections import defaultdict
+from importlib.metadata import version
 from pathlib import Path
 
 
@@ -112,6 +113,10 @@ def build_items(args: argparse.Namespace) -> list[dict]:
             raise ValueError(f"Invalid evaluation conditions: {sorted(invalid)}")
     items = []
     if "original" in conditions:
+        if args.audio_root is None:
+            raise ValueError(
+                "--audio-root is required when --conditions includes original"
+            )
         for row in manifest:
             if args.split != "all" and row["split"] != args.split:
                 continue
@@ -293,6 +298,8 @@ def evaluate(args: argparse.Namespace) -> None:
             writer.writeheader()
             writer.writerows(comparison)
     experiment = {
+        "asr_backend": "faster-whisper",
+        "asr_backend_version": version("faster-whisper"),
         "asr_model": args.model, "device": args.device,
         "compute_type": args.compute_type, "language": args.language,
         "beam_size": args.beam_size, "conditions": condition_order,
@@ -308,7 +315,10 @@ def evaluate(args: argparse.Namespace) -> None:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", type=Path, required=True)
-    parser.add_argument("--audio-root", type=Path, required=True)
+    parser.add_argument(
+        "--audio-root", type=Path,
+        help="Required only when --conditions includes original.",
+    )
     parser.add_argument("--reconstruction-index", type=Path, required=True)
     parser.add_argument("--reconstruction-root", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)

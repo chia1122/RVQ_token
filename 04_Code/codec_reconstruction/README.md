@@ -8,6 +8,105 @@ The same workflow supports DAC. If DAC is the primary codec, use
 `reconstruct_dac_prefixes.py` and the DAC token root below; the pretrained-ASR
 evaluator is codec-independent.
 
+## SpeechTokenizer runtime K8 evaluation (no saved tokens)
+
+This mode implements the following path without reading or writing codec token
+files:
+
+`TORGO WAV -> SpeechTokenizer encode (memory only) -> Q1:Q8 decode -> WAV -> fixed pretrained ASR`
+
+Run these commands from `04_Code/` on Linux. Point the variables at persistent
+storage outside the repository; reconstructed WAVs and ASR outputs must not be
+committed.
+
+```bash
+ManifestFile="$TORGO_MILD_MANIFEST_ROOT/torgo_all.jsonl"
+ReconRoot="$RVQ_ARTIFACT_ROOT/reconstructions/speechtokenizer_runtime_k8_v1"
+AsrRoot="$RVQ_ARTIFACT_ROOT/asr/speechtokenizer_runtime_k8_large_v3_v1"
+
+test -f "$ManifestFile"
+test -n "$AudioRoot" && test -d "$AudioRoot"
+test -f "$STConfig"
+test -f "$STCheckpoint"
+test ! -e "$ReconRoot"
+test ! -e "$AsrRoot"
+```
+
+First reconstruct and evaluate one utterance:
+
+```bash
+python codec_reconstruction/reconstruct_speechtokenizer_prefixes.py \
+  --input-mode audio \
+  --manifest "$ManifestFile" \
+  --audio-root "$AudioRoot" \
+  --output-dir "${ReconRoot}_smoke" \
+  --config "$STConfig" \
+  --checkpoint "$STCheckpoint" \
+  --layers 8 \
+  --split all \
+  --limit 1 \
+  --device cuda
+
+python codec_reconstruction/evaluate_with_faster_whisper.py \
+  --manifest "$ManifestFile" \
+  --audio-root "$AudioRoot" \
+  --reconstruction-index "${ReconRoot}_smoke/reconstruction_index.jsonl" \
+  --reconstruction-root "${ReconRoot}_smoke" \
+  --output-dir "${AsrRoot}_smoke" \
+  --conditions original,k8 \
+  --split all \
+  --limit-per-condition 1 \
+  --model large-v3 \
+  --language en \
+  --beam-size 5 \
+  --device cuda \
+  --compute-type float16
+```
+
+After verifying that the K8 WAV is non-empty and the smoke ASR produced one
+prediction, run the full reconstruction and evaluation with new output paths:
+
+```bash
+python codec_reconstruction/reconstruct_speechtokenizer_prefixes.py \
+  --input-mode audio \
+  --manifest "$ManifestFile" \
+  --audio-root "$AudioRoot" \
+  --output-dir "$ReconRoot" \
+  --config "$STConfig" \
+  --checkpoint "$STCheckpoint" \
+  --layers 8 \
+  --split all \
+  --device cuda
+
+python codec_reconstruction/evaluate_with_faster_whisper.py \
+  --manifest "$ManifestFile" \
+  --audio-root "$AudioRoot" \
+  --reconstruction-index "$ReconRoot/reconstruction_index.jsonl" \
+  --reconstruction-root "$ReconRoot" \
+  --output-dir "$AsrRoot" \
+  --conditions original,k8 \
+  --split all \
+  --model large-v3 \
+  --language en \
+  --beam-size 5 \
+  --device cuda \
+  --compute-type float16
+```
+
+The evaluator loads `faster-whisper large-v3` once and uses it for both
+`original` and `k8`, with the same language, beam size, temperature,
+`condition_on_previous_text`, text normalization, and corpus-level scoring.
+This controlled rerun is required for a strict comparison. The older
+`Whisper_dwer` scripts use the OpenAI `whisper` backend and utterance-mean WER,
+so their original-audio result is useful historical context but is not a
+strictly interchangeable baseline for this faster-whisper K8 result. If an
+original baseline was already produced by this exact evaluator and settings,
+K8 alone can instead be run with `--conditions k8` and no `--audio-root`.
+
+Report WER/CER as ASR transcription error, not as clinical intelligibility.
+For clinical group comparisons, summarize speakers as subjects rather than
+treating utterances as independent subjects.
+
 ## DAC-first smoke test
 
 Confirm the completed DAC extraction and actual codebook count:

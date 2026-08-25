@@ -18,10 +18,28 @@ from reconstruct_encodec_prefixes import (
     validate_requested_layers,
 )
 from reconstruct_dac_prefixes import prefix_latent_from_codes
+from reconstruct_speechtokenizer_prefixes import select_rows, validate_input_mode
 from paired_bootstrap import load_pairs, percentile
 
 
 class ReconstructionHelpersTest(unittest.TestCase):
+    def test_speechtokenizer_input_modes(self):
+        validate_input_mode("audio", None, None)
+        validate_input_mode("tokens", Path("tokens.jsonl"), Path("tokens"))
+        with self.assertRaisesRegex(ValueError, "requires --token-index"):
+            validate_input_mode("tokens", None, None)
+
+    def test_audio_mode_selects_manifest_rows(self):
+        rows = [
+            {"utt_id": "u1", "split": "test", "speaker_id": "F01"},
+            {"utt_id": "u2", "split": "test", "speaker_id": "MC01"},
+            {"utt_id": "u3", "split": "train", "speaker_id": "F01"},
+        ]
+        self.assertEqual(
+            [row["utt_id"] for row in select_rows(rows, "test", {"F01"}, 1)],
+            ["u1"],
+        )
+
     def test_parse_layers(self):
         self.assertEqual(parse_layers("8,1,4,4"), [1, 4, 8])
         self.assertEqual(parse_layers(DEFAULT_LAYERS), list(range(1, 9)))
@@ -77,6 +95,36 @@ class ReconstructionHelpersTest(unittest.TestCase):
             )
             self.assertEqual(prediction["condition"], "dysarthric")
             self.assertEqual(prediction["rvq_condition"], "k3")
+
+    def test_build_items_allows_reconstruction_only_without_audio_root(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            manifest = root / "manifest.jsonl"
+            reconstruction = root / "reconstruction.jsonl"
+            manifest_row = {
+                "utt_id": "u1", "audio_path": "u1.wav", "speaker_id": "F01",
+                "condition": "dysarthric", "severity": "severe", "split": "test",
+                "text_norm": "HELLO",
+            }
+            reconstruction_row = {
+                **manifest_row, "audio_path": "k8/u1.wav", "rvq_condition": "k8",
+            }
+            manifest.write_text(json.dumps(manifest_row) + "\n", encoding="utf-8")
+            reconstruction.write_text(
+                json.dumps(reconstruction_row) + "\n", encoding="utf-8"
+            )
+            args = Namespace(
+                conditions="k8", speakers="", manifest=manifest,
+                reconstruction_index=reconstruction, audio_root=None,
+                reconstruction_root=root, split="test", limit_per_condition=0,
+            )
+            items = build_items(args)
+            self.assertEqual(len(items), 1)
+            self.assertEqual(items[0]["rvq_condition"], "k8")
+
+            args.conditions = "original,k8"
+            with self.assertRaisesRegex(ValueError, "--audio-root is required"):
+                build_items(args)
 
     def test_safe_name(self):
         self.assertEqual(safe_name("F01/a:1"), "F01_a_1")
