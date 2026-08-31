@@ -1,9 +1,10 @@
-# Phase 1 — SpeechTokenizer RVQ Depth Trajectory
+# Phase 1 and matched follow-up — SpeechTokenizer RVQ Depth Trajectories
 
 > **Record status:** completed fixed-split pilot plus completed seven-fold
-> speaker-disjoint cumulative-prefix follow-up. This document preserves the
-> original metrics and checkpoint-selection comparison and records the formal
-> 168-run aggregation.
+> speaker-disjoint cumulative-prefix and individual-layer follow-ups. This
+> document preserves the original metrics and checkpoint-selection comparison
+> and records both formal 168-run matrices, their paired analysis, and the
+> completed 70,065-item frozen-ASR cumulative reconstruction baseline.
 > It does not establish the final pathology-aware fusion method, a clinical
 > information hierarchy, or the absence of linguistic information in later RVQ
 > layers. The current roadmap is
@@ -59,8 +60,9 @@ fusion = sqrt_normalized_sum
 latent。模型輸出的 equal `normalized_layer_weights` 是描述性權重；實際 forward
 scale 是 `1/sqrt(K)`，不是 arithmetic mean `1/K`。
 
-現有程式可透過明確指定 active layer 建立 individual learned-layer condition，
-但 Phase 1 sweep 未使用該模式，也未完成 matched individual Q1–Q8 trajectory。
+現有程式可透過明確指定 active layer 建立 individual learned-layer condition。
+原 Phase 1 sweep 未使用該模式；後續正式 seven-fold matched individual Q1–Q8
+trajectory 已完成，結果記錄於第 11 節。
 因此原始數值不需要改動，但其意義只限於 cumulative learned-prefix ASR
 performance。
 
@@ -509,13 +511,226 @@ cumulative fusion 的 degradation 並非由單一 speaker、rotation 或 seed �
 baseline，也是後續 complementarity diagnosis 的動機。
 
 然而，這仍無法區分「later layers 沒有可轉移 ASR 資訊」與「later layers 有互補
-資訊，但固定相加造成 destructive interference」。因此 adaptive-fusion decision
-gate 尚未通過；下一步必須先完成 matched individual Q1–Q8 與 fixed-fusion
+資訊，但固定相加造成 destructive interference」。後續 matched individual Q1–Q8
+已完成並顯示 later residual layers 的獨立 transcription recoverability 有限；這仍
+不等同於證明 later layers 不含 acoustic 或 fusion-complementary information。因此
+adaptive-fusion decision gate 尚未通過，仍需 reconstruction 與 fixed-fusion
 baselines。
 
 ---
 
-## 11. Fixed-split pilot interpretation
+## 11. Seven-fold matched individual-layer follow-up
+
+### 11.1 Protocol and positive-control audit
+
+正式 matched individual matrix 沿用 cumulative trajectory 的七個 speaker-disjoint
+rotations、三個 seeds、model capacity、optimizer、training budget 與 validation-CER
+checkpoint selection：
+
+```text
+7 rotations × 8 individual layers × 3 seeds = 168 runs
+```
+
+工作站 audit 確認 168/168 runs 為 valid，且每個 `individual_qK` 僅啟用 QK 的
+task-trained discrete embedding。這不是 frozen codec-native embedding，也不是把
+token ID 當作可加總的數值特徵。
+
+Q1 是預先指定的 positive control，因為 `individual_q1` 與 `cumulative_q1` 使用
+相同 representation。兩者 run-macro 差異接近零：CER delta `+0.0017`，WER delta
+`-0.0001`。Speaker-level Q1 direction 亦大致均衡（CER 9 worse／6 better；WER
+7 worse／7 better／1 equal），支持 paired pipeline 沒有明顯偏向任一 condition。
+
+### 11.2 Individual versus cumulative actual values
+
+下表是七 rotations × 三 seeds 的 21 個 paired overall results 之 run-macro mean；
+delta 定義為 `individual QK − cumulative Q1:QK`，正值代表 individual error 較高：
+
+| Depth | Individual CER | Cumulative CER | Delta CER | Individual WER | Cumulative WER | Delta WER |
+|---:|---:|---:|---:|---:|---:|---:|
+| 1 | 0.4993 | 0.4976 | +0.0017 | 0.8881 | 0.8882 | -0.0001 |
+| 2 | 0.9163 | 0.5313 | +0.3851 | 0.9993 | 0.9271 | +0.0722 |
+| 3 | 0.8788 | 0.5540 | +0.3248 | 1.0001 | 0.9501 | +0.0500 |
+| 4 | 0.8880 | 0.5622 | +0.3257 | 0.9994 | 0.9549 | +0.0444 |
+| 5 | 0.8689 | 0.5734 | +0.2955 | 0.9985 | 0.9642 | +0.0343 |
+| 6 | 0.8977 | 0.5832 | +0.3145 | 0.9974 | 0.9789 | +0.0185 |
+| 7 | 0.8923 | 0.5873 | +0.3050 | 0.9981 | 0.9755 | +0.0226 |
+| 8 | 0.8968 | 0.5906 | +0.3062 | 0.9995 | 0.9800 | +0.0196 |
+
+Individual Q2–Q8 WER 約為 `0.997–1.000`，已接近飽和，因此 CER 對 residual-layer
+差異較有解析力。Q5 是 individual residual layers 中 CER 最低者，但仍遠劣於 Q1；
+這只表示相對 recoverability，不代表 Q5 可獨立保存完整 transcription。
+
+### 11.3 Speaker consistency and magnitude audit
+
+每位 speaker 先跨三 seeds 平均。Q2–Q8 的 CER direction 對 15/15 speakers 均為
+individual worse，且每位 speaker 在七個 residual depths 全為正 delta：
+
+| Depth | CER individual worse | CER individual better | WER individual worse | WER individual better |
+|---:|---:|---:|---:|---:|
+| 2 | 15 | 0 | 11 | 4 |
+| 3 | 15 | 0 | 13 | 2 |
+| 4 | 15 | 0 | 12 | 3 |
+| 5 | 15 | 0 | 12 | 3 |
+| 6 | 15 | 0 | 10 | 5 |
+| 7 | 15 | 0 | 11 | 4 |
+| 8 | 15 | 0 | 11 | 4 |
+
+WER direction 較不一致與其接近 1.0 的 metric saturation 相符，不能推翻一致的 CER
+pattern。對 Q2–Q8 CER delta 先跨 depths 平均，再讓 speakers 等權後，control 約為
+`+0.3790`、dysarthric 約為 `+0.2205`。最大的差異主要來自 control speakers 與
+mild speaker M03，而 severe speakers 約為 `+0.1536`，因此方向與主要 magnitude
+並非由少數 severe speakers 拉高。
+
+兩位 mild speakers 均為七個 residual depths 全正 delta，但 magnitude 不同：M03
+平均 `+0.4385`，F04 平均 `+0.3144`。這兩位 speakers 不足以定義一般化的 mild
+pattern。Severe-speaker delta 較小也不能解讀為 residual layers 對 severe speech
+保存較多資訊，因為當 individual 與 cumulative errors 都高時，兩者差值會受到
+baseline-error compression。
+
+### 11.4 Decoding failure mechanism
+
+Q2–Q8 individual models 呈現一致的 high-blank、deletion-dominated
+under-generation，而不是普遍輸出完全空白 hypothesis：
+
+| Depth | Individual deletion | Cumulative deletion | Individual blank | Cumulative blank | Individual length ratio | Cumulative length ratio | Individual epoch | Cumulative epoch |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 1 | 0.1677 | 0.1586 | 0.8098 | 0.8071 | 0.7911 | 0.7983 | 26.24 | 27.38 |
+| 2 | 0.5764 | 0.1557 | 0.9451 | 0.8095 | 0.2605 | 0.7779 | 24.05 | 26.81 |
+| 3 | 0.5040 | 0.1624 | 0.9285 | 0.8104 | 0.3054 | 0.7705 | 27.48 | 27.00 |
+| 4 | 0.5177 | 0.1688 | 0.9338 | 0.8117 | 0.3023 | 0.7734 | 28.29 | 28.24 |
+| 5 | 0.4848 | 0.1700 | 0.9259 | 0.8150 | 0.3182 | 0.7567 | 27.86 | 27.71 |
+| 6 | 0.5701 | 0.1614 | 0.9335 | 0.8132 | 0.2843 | 0.7575 | 27.43 | 27.90 |
+| 7 | 0.5630 | 0.1680 | 0.9346 | 0.8137 | 0.2880 | 0.7569 | 28.33 | 29.14 |
+| 8 | 0.5360 | 0.1700 | 0.9327 | 0.8133 | 0.2891 | 0.7588 | 27.38 | 29.05 |
+
+相對 cumulative，individual Q2–Q8 blank-frame ratio 增加約 `0.111–0.136`，
+hypothesis/reference character-length ratio 減少約 `0.439–0.517`，deletion rate
+增加約 `0.315–0.421`。Empty-hypothesis ratio 只增加約 `0.001–0.017`，表示模型
+通常仍有輸出，但 hypothesis 只約 reference length 的 26%–32%。Individual
+substitution 與 insertion rates 較低並非改善，而是大量 omitted content 在 edit
+alignment 中轉為 deletion。
+
+Individual selected epochs 多在 24–28，且除 Q2 外大致接近 cumulative，因此不能
+把 failure 簡化成 premature checkpoint selection。結果支持 residual Q2–Q8 在目前
+matched CTC protocol 下的獨立 transcription recoverability 有限，但不證明其中
+不含 acoustic、speaker、clinical-related 或可由其他 fusion 利用的資訊。
+
+### 11.5 Completed cumulative reconstruction frozen-ASR baseline
+
+SpeechTokenizer 原生 cumulative-prefix reconstruction baseline 已完成：
+
+```text
+Original audio ────────────────> one frozen ASR
+Cumulative Q1 reconstruction ─> the same frozen ASR
+Cumulative Q1:Q2 ─────────────> the same frozen ASR
+...
+Cumulative Q1:Q8 ─────────────> the same frozen ASR
+```
+
+正式 reconstruction 使用 7,785 個 enrolled utterances，產生 62,280 個 Q1–Q8 WAV，
+sample rate 為 16 kHz，0 failures。Frozen-ASR evaluation 對 original 與 k1–k8
+共產生 70,065 predictions；每個 condition 恰有 7,785 predictions，沒有 duplicate
+utterance/condition pairs、reference mismatches、metadata mismatches 或 failures。
+Evaluator 為同一個 `faster-whisper 1.2.1`、`large-v3`、float16、English、beam size
+5 configuration。ASR 未針對任何 reconstruction condition fine-tune。
+
+這個 frozen evaluation 使用全部 paired utterances，不需要把相同 audio 重複套入七個
+training rotations；它不是一個新的 cross-validation training protocol。Original audio
+是相同 evaluator 下的 reference condition。
+
+此實驗遵循 codec 原生 residual decoding：QK 是對 Q1:Q(K−1) 的殘差修正，不是
+獨立完整 waveform representation。因此不進行把 Q1:Q(K−1) 任意補零後的
+individual Q2–Q8 reconstruction，也不把這種 out-of-distribution latent 稱為正式
+codec condition。
+
+這條 reconstruction path 測量固定 ASR protocol 下可辨識 linguistic content 的
+保留，與 direct-token learned-embedding probe 互補。它不能單獨證明整體語音資訊、
+human intelligibility、clinical intelligibility、severity 或 diagnosis 被保留。
+
+### 11.6 Overall and condition reconstruction trajectories
+
+下表為 corpus-level utterance-micro WER/CER：
+
+| Condition | WER | CER | Delta WER vs original | Delta CER vs original |
+|---|---:|---:|---:|---:|
+| Original | 0.2580 | 0.1593 | 0.0000 | 0.0000 |
+| K1 | 0.8033 | 0.5604 | +0.5454 | +0.4012 |
+| K2 | 0.6583 | 0.4477 | +0.4003 | +0.2885 |
+| K3 | 0.5568 | 0.3726 | +0.2988 | +0.2134 |
+| K4 | 0.4745 | 0.3144 | +0.2165 | +0.1552 |
+| K5 | 0.4336 | 0.2793 | +0.1756 | +0.1201 |
+| K6 | 0.4219 | 0.2847 | +0.1639 | +0.1254 |
+| K7 | 0.3855 | 0.2581 | +0.1275 | +0.0988 |
+| K8 | 0.3883 | 0.2502 | +0.1304 | +0.0910 |
+
+K1→K8 的 WER 由 0.8033 降至 0.3883，CER 由 0.5604 降至 0.2502。K8
+消除了約 77.3% 的 K1 excess CER，但仍未恢復 original performance。最低 WER 在
+K7，最低 CER 在 K8；K5→K6 CER 小幅惡化，K7→K8 WER 小幅惡化，因此 trajectory
+是 generally improving 而非所有 metrics 嚴格單調。
+
+Control 與 dysarthric utterance-micro 都由 K1 向 deeper prefixes 改善：
+
+| Group | Original CER | K1 CER | K7 CER | K8 CER | K8 − original |
+|---|---:|---:|---:|---:|---:|
+| Control | 0.0459 | 0.4055 | 0.1258 | 0.1190 | +0.0731 |
+| Dysarthric | 0.3677 | 0.8454 | 0.5012 | 0.4916 | +0.1239 |
+
+K5→K6 overall CER 反轉來自 dysarthric CER 由 0.5135 增至 0.5482；K7→K8
+overall WER 反轉亦來自 dysarthric WER 由 0.7076 增至 0.7346。Frozen Whisper
+在 original audio 已呈現明顯 condition-level ASR performance gap；這不能解讀為
+clinical severity、human intelligibility 或 fairness improvement。
+
+### 11.7 Speaker-macro and per-speaker reconstruction audit
+
+讓 15 位 speakers 等權後，trajectory direction 仍與 utterance-micro 一致：
+
+| Group | Original speaker-macro CER | K1 | K7 | K8 |
+|---|---:|---:|---:|---:|
+| Overall | 0.2291 | 0.6660 | 0.3376 | 0.3366 |
+| Control | 0.0478 | 0.4167 | 0.1290 | 0.1217 |
+| Dysarthric | 0.3878 | 0.8841 | 0.5202 | 0.5247 |
+
+K8 CER 優於 K1 對 15/15 speakers 成立，因此 cumulative-depth benefit 不是由少數
+speakers 或不等 utterance counts 驅動。最佳 reconstructed depth counts 為 K8：10、
+K7：4、K5：1。所有 7 位 control speakers 的最佳 CER 都在 K8；dysarthric
+speakers 則為 K8：3、K7：4、K5：1。
+
+K8 相對 K7 為 10 speakers 改善、5 speakers 惡化。Dysarthric speaker-macro 的
+K7 CER 0.5202 略優於 K8 的 0.5247，雖然 dysarthric utterance-micro 在 K8 較好，
+顯示 aggregate conclusion 對 estimand 有依賴，不能用 utterance-micro 取代
+speaker-level reporting。
+
+K8 相對 original 仍對 14/15 speakers 較差；唯一例外 M05 的 original CER 0.5433、
+K7 0.4446、K8 0.5012。這可能表示 codec transformation 更符合 frozen ASR 的輸入
+偏好，不能稱為新增原始資訊或改善 human intelligibility。
+
+### 11.8 Token–reconstruction trajectory reversal
+
+兩條正式 trajectory 呈現方向反轉：
+
+```text
+Direct-token cumulative CTC:
+15/15 speakers 的 Q1 最佳；0/15 的 Q1:Q8 優於 Q1。
+
+Codec-native cumulative reconstruction:
+15/15 speakers 的 K8 優於 K1；10/15 的最佳 reconstructed depth 是 K8。
+```
+
+因此 later residual layers 含有可被 codec-native decoder 使用的資訊。Direct-token
+fixed sqrt-normalized probe 的 deeper-prefix degradation 不能再解讀為 later layers
+缺乏有用資訊；它更符合 representation/fusion mismatch，包括 task-trained embeddings
+未保留 native residual geometry、fixed sum destructive interference，或 probe 未有效
+建模 codebook hierarchy 等候選解釋。不同 evaluator 的絕對 CER 不可直接互換，
+此處比較的是 within-experiment trajectory direction。
+
+這項 reversal 提供 fixed-fusion research 的動機，但 adaptive-fusion decision gate
+仍未通過。下一步需在相同 speaker folds、seeds、capacity、budget 與 CER selection
+下比較 Q1、現有 sqrt-normalized sum、concatenation plus projection 與 static learned
+weighting，才能判斷 later-layer information 是否能被 direct-token ASR 穩定利用。
+
+---
+
+## 12. Fixed-split pilot interpretation
 
 目前最保守且可支持的英文描述為：
 
@@ -545,7 +760,7 @@ baselines。
 這些結果只支持目前模型與實驗設定下的 ASR performance 描述，不支持 clinical
 intelligibility、臨床診斷或 utterance-level severity 的推論。
 
-### 11.1 Meaning under the revised research direction
+### 12.1 Meaning under the revised research direction
 
 在新的研究方向中，Phase 1 的用途是診斷與方法動機：固定 cumulative fusion
 隨 depth 加深沒有改善 CER，且 checkpoint objective 會顯著改變深層結果。它支持
@@ -564,7 +779,7 @@ multilayer fusion 對多位 dysarthric speakers／phoneme categories 有一致�
 
 ---
 
-## 12. Limitations
+## 13. Limitations
 
 1. 每個 depth 只有三個 seeds。
 2. 原 Phase 1 pilot 使用單一 fixed split；正式 follow-up 已改用七個
@@ -576,8 +791,10 @@ multilayer fusion 對多位 dysarthric speakers／phoneme categories 有一致�
    sensitivity。
 6. 原 fixed-split CER sensitivity 的 coverage 只有 FC03、M05、MC04；七-fold
    follow-up 改善 speaker coverage，但不消除小 corpus 與 severity imbalance。
-7. 尚未比較其他 token fusion mechanisms。
-8. 尚未執行 codec-native embedding probe 或 acoustic baseline。
+7. Matched individual Q1–Q8 已完成，但尚未比較其他 token fusion mechanisms。
+8. 正式 cumulative reconstruction frozen-ASR trajectory 已完成，但 frozen ASR
+   對 dysarthric speech 的 domain mismatch 與 evaluator bias 仍限制 interpretation；
+   codec-native embedding probe 與 acoustic baseline 尚未執行。
 9. 沒有進行 mixed-effects analysis 或 statistical significance testing。
 10. CUDA runs 未啟用嚴格 deterministic mode；小幅 rerun 差異可能包含 GPU
     nondeterminism。
@@ -587,15 +804,16 @@ multilayer fusion 對多位 dysarthric speakers／phoneme categories 有一致�
 
 ---
 
-## 13. Recommended next step
+## 14. Recommended next step
 
-1. 保存並鎖定已通過 audit 的 168-run aggregation 與 experiment protocol；
+1. 保存並鎖定 cumulative 與 individual 各 168-run aggregation、paired comparison、
+   frozen-ASR reconstruction audit 與 experiment protocol；
 2. 完成 Stage 0 representation/provenance table；
-3. 使用已實作的 reference-config-driven sweep，在相同 folds、seeds、capacity、
-   optimizer、budget 與 CER selection 下執行 matched individual Q1–Q8 trajectory；
+3. 保持 individual Q2–Q8 非原生 reconstruction 排除於正式 conditions；
 4. 比較 Q1、fixed normalized sum、concatenation 與 static learned weighting；
-5. 以 complementarity decision gate 決定是否進入 utterance-adaptive fusion。
+5. 綜合 token-domain、reconstruction 與 fixed-fusion 證據後，再以 complementarity
+   decision gate 決定是否進入 utterance-adaptive fusion。
 
 本 Phase 1 record 不新增mixed-effects model、clinical interpretation或probe
-結果。尚未實作的individual sweep、concatenation、adaptive gating與pathology-aware
-objectives不得由本文件視為已完成。
+結果。尚未完成的 concatenation、adaptive gating 與 pathology-aware objectives
+不得由本文件視為已完成。

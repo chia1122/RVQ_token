@@ -128,7 +128,8 @@ than assuming N=8.
   learned-embedding layer when the input includes that layer.
 - A reference-config-driven individual-layer sweep is implemented. It derives
   folds, seeds, optimizer, budget, capacity, and CER selection from the
-  completed cumulative configs. Formal individual Q1–Q8 runs remain pending.
+  completed cumulative configs. The formal individual Q1–Q8 matrix completed
+  168/168 valid runs and has been paired with the cumulative trajectory.
 - `layer_fusion=learned` learns one global softmax weight per active layer. It
   is static learned fusion, not utterance-adaptive gating.
 - Concatenation plus projection is not implemented.
@@ -188,6 +189,17 @@ This establishes a consistent negative result for fixed cumulative
 sqrt-normalized fusion. It does not establish that individual later layers
 lack linguistic or complementary information.
 
+The matched individual-layer follow-up also completed 168/168 valid runs.
+Individual Q1 reproduced cumulative Q1 within small rerun variation. For every
+residual depth Q2–Q8, all 15 speakers had higher individual-layer CER than for
+the corresponding cumulative prefix. Individual residual-layer WER saturated
+near 1.0, while hypotheses retained only approximately 26%–32% of reference
+character length, compared with 76%–78% for cumulative prefixes. Blank-frame
+ratio increased by approximately 0.111–0.136 and deletion rate by
+0.315–0.421. This is a high-blank, deletion-dominated under-generation result,
+not evidence that later layers contain no acoustic or fusion-complementary
+information.
+
 The primary protocol estimates ASR generalization to unseen speakers under a
 largely shared-prompt TORGO setting. It is not a prompt-disjoint generalization
 protocol.
@@ -231,12 +243,30 @@ Required matched baselines:
 6. necessary acoustic baselines, initially Log-Mel and a frozen
    pre-quantization encoder representation if faithfully available.
 
-The fixed-split pilot and seven-fold Q1/cumulative Q1:QK trajectories are
-complete baselines. The model also contains fixed sqrt-normalized sum and
-static learned weights, but no full matched fusion comparison has been
-completed. Individual-layer sweep infrastructure is implemented, but its
-formal 168-run matrix has not been executed. Concatenation and acoustic
-baseline matrices remain planned.
+The fixed-split pilot, seven-fold Q1/cumulative Q1:QK trajectory, and matched
+individual Q1–Q8 trajectory are complete baselines. The model also contains
+fixed sqrt-normalized sum and static learned weights, but no full matched
+fusion comparison has been completed. Concatenation and acoustic baseline
+matrices remain planned.
+
+The completed controlled reconstruction baseline uses cumulative SpeechTokenizer
+prefixes:
+original audio and reconstructed Q1, Q1:Q2, ..., Q1:Q8 audio are evaluated by
+one frozen ASR checkpoint with identical audio preprocessing, normalization,
+decoding, and scoring. The ASR is not adapted to any reconstruction condition.
+This tests ASR-recognizable linguistic preservation after codec-native prefix
+decoding and complements the learned-token CTC probes. Individual Q2–Q8 are
+not reconstructed by zero-filling missing earlier layers because residual
+codebooks are conditional refinements, not codec-native standalone waveform
+conditions.
+
+The formal audit contains 62,280 reconstructed WAVs and 70,065 paired
+original/k1–k8 frozen-ASR predictions for 7,785 utterances, with no failures,
+duplicate pairs, reference mismatches, or metadata mismatches. Overall CER
+improved from 0.5604 at K1 to 0.2502 at K8 but remained above original-audio
+CER 0.1593. K8 outperformed K1 for all 15 speakers; the best reconstructed
+depth was K8 for 10 speakers, K7 for four, and K5 for one. K8 remained worse
+than original for 14 of 15 speakers.
 
 **Fairness controls:** same folds, seeds, backbone, optimizer, training budget,
 checkpoint-selection metric, and effective batch size. Parameter counts and
@@ -262,7 +292,7 @@ baseline methods can consume identical saved split assignments.
 
 ### Stage 3 — Complementarity diagnosis
 
-**Status: planned**
+**Status: partially completed**
 
 Use lightweight diagnostic analyses to determine whether later layers contain
 cross-speaker information that could improve dysarthric ASR:
@@ -274,6 +304,13 @@ cross-speaker information that could improve dysarthric ASR:
 - descriptive severity-associated information where statistically defensible;
 - frozen codec-native analysis only when native vectors are faithfully
   recoverable.
+
+Completed evidence includes matched cumulative and individual learned-token
+trajectories plus codec-native cumulative reconstruction. The reconstruction
+direction reversal establishes decoder-usable later-layer information, but
+individual token probes and current fixed summation do not demonstrate stable
+direct-token complementarity. Phoneme/error-category, separate speaker-task,
+and faithful frozen-native-vector diagnostics remain pending.
 
 Speaker identity and clinical tasks must not automatically share a split.
 Clinical probes use speaker-disjoint evaluation; speaker identity requires its
@@ -290,9 +327,13 @@ research hypothesis before implementing adaptive gating.
 
 **Current gate status: not passed.** The completed cumulative-prefix baseline
 shows that fixed sqrt-normalized addition degrades CER consistently across all
-speakers and rotations. Individual-layer and alternative fixed-fusion
-experiments are still required to distinguish absent complementarity from
-destructive fixed fusion.
+speakers and rotations. The completed individual-layer experiment shows weak
+independent transcription recovery from Q2–Q8 through deletion-dominated
+under-generation. In contrast, completed codec-native cumulative reconstruction
+improves from K1 to K8 for all 15 speakers. This directional reversal shows
+that later layers contain decoder-usable information and strengthens the
+representation/fusion-mismatch hypothesis. Alternative fixed-fusion experiments
+are still required before adaptive gating can be justified.
 
 ### Stage 4 — Fixed fusion baselines
 
@@ -407,7 +448,8 @@ part of the first cross-codec replication.
 |---|---|---|---|---|
 | Phase 1 pilot | cumulative discrete-learned Q1:QK | sqrt-normalized sum | one fixed speaker-disjoint split | completed |
 | Seven-rotation trajectory | cumulative discrete-learned Q1:QK | sqrt-normalized sum | seven cyclic speaker folds | completed and aggregated |
-| Individual diagnostic | individual discrete-learned QK | one active layer | same saved speaker folds | implemented; formal runs pending |
+| Individual diagnostic | individual discrete-learned QK | one active layer | same saved speaker folds | completed and paired; 168/168 valid |
+| Reconstruction baseline | codec-native cumulative Q1:QK waveform | native decoder; one frozen ASR | all enrolled speakers, paired utterances | completed; 70,065 predictions, audit valid |
 | Fixed fusion | full discrete-learned RVQ | uniform, mean/sqrt-normalized, concat, static learned | same saved speaker folds | partially implemented; comparison planned |
 | Adaptive fusion | full discrete-learned RVQ | utterance-adaptive gating | same saved speaker folds | planned |
 | Objective ablation | adaptive representation | CTC and auxiliary/sparse variants | same saved speaker folds | planned |
@@ -473,13 +515,14 @@ speaker-level, capacity, and efficiency analyses.
 ## 11. Immediate next steps
 
 1. Preserve and freeze the audited folds, seeds, capacity, budget, selection
-   protocol, and aggregation outputs.
+   protocol, cumulative and individual aggregations, paired outputs, and the
+   frozen-ASR reconstruction audit.
 2. Complete Stage 0 representation/provenance tables.
-3. Dry-run, smoke-test, and execute the implemented matched individual-layer
-   sweep without changing the saved speaker folds.
-4. Aggregate and pair individual QK with cumulative Q1:QK results.
-5. Add concatenation plus projection and run the complete fixed-fusion matrix.
-6. Apply the Stage 3 decision gate before implementing utterance-adaptive
+3. Keep non-native individual Q2–Q8 reconstruction outside the formal matrix.
+4. Add concatenation plus projection and run the complete matched fixed-fusion
+   matrix, including Q1, sqrt-normalized sum, concatenation, and static learned
+   weighting.
+5. Apply the Stage 3 decision gate before implementing utterance-adaptive
    pathology-aware fusion.
 
 No new probes, models, formal training commands, or experimental results are

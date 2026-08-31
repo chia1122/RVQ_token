@@ -13,7 +13,7 @@ motivation. It is not the final research contribution.
 | Document | Status | Purpose |
 |---|---|---|
 | [Pathology-aware RVQ fusion roadmap](PATHOLOGY_AWARE_RVQ_FUSION_ROADMAP.md) | canonical | Current research questions, Stage 0–9 roadmap, experiment matrix, decision gates, and success criteria. |
-| [Phase 1 conclusion](01_conclution.md) | completed pilot record | Preserves the fixed-split SpeechTokenizer Q1–Q8 results and their representation audit. |
+| [Phase 1 conclusion](01_conclution.md) | completed trajectory record | Preserves the fixed-split pilot and formal seven-fold cumulative/individual SpeechTokenizer results. |
 | [Dataset protocol amendment](01_dataset_modify.md) | partially completed protocol | Records mild-speaker inclusion, seven cyclic speaker folds, audit status, and remaining evaluation work. |
 | [Stage overview](00_Stage_target.md) | revised index | Maps the superseded Stage 1–9 plan to the current Stage 0–9 roadmap. |
 | [Manifest/Phase 1 specification](01_Manifest_pre.md) | historical, completed | Original Phase 1 implementation request. |
@@ -33,11 +33,11 @@ must not be interpreted as the current execution order.
 | [Codec-native embedding probe](06_Codec_native_embedding_probe.md) | Stage 0 audit, Stage 3 diagnosis, or Stage 9 extension |
 | [Acoustic baseline](07_Acoustic_baseline.md) | Stage 1 reliable baselines |
 | [Codec adapter](08_Codec_adapter.md) | Minimal Stage 8 support; broad refactor deferred |
-| [Reconstruction fidelity](09_Reconstruction_fidelity.md) | Stage 9 exploratory extension |
+| [Reconstruction fidelity](09_Reconstruction_fidelity.md) | Stage 1 controlled reconstruction-ASR baseline; broader fidelity work remains Stage 9 |
 
 ## Current status snapshot
 
-As of 2026-08-24:
+As of 2026-08-31:
 
 - Phase 1 fixed-split SpeechTokenizer cumulative-prefix trajectories are
   complete for WER- and CER-selected checkpoints and remain pilot evidence.
@@ -51,12 +51,19 @@ As of 2026-08-24:
   168/168 valid runs: seven rotations, eight depths, and three seeds.
 - Cross-rotation aggregation is complete with audited run-macro, pooled-micro,
   speaker-macro, per-speaker, and per-rotation outputs.
-- Reference-config-driven individual Q1–QN sweep and paired representation
-  comparison tooling are implemented; formal individual runs are not yet
-  complete.
-- Formal individual-layer results, concatenation baselines, utterance-adaptive
-  gating, pathology-aware objectives, and cross-codec replication remain
-  pending unless explicitly stated otherwise in the canonical roadmap.
+- The matched individual Q1–Q8 matrix completed 168/168 valid runs. Paired
+  analysis found higher Q2–Q8 individual CER for all 15 speakers and a
+  high-blank, deletion-dominated under-generation pattern.
+- Cumulative Q1:Q8 reconstruction and original audio were evaluated by one
+  frozen faster-whisper configuration. The formal audit contains 70,065 valid
+  predictions with no failures or pairing mismatches.
+- Reconstruction K8 improved over K1 for all 15 speakers, whereas the learned
+  direct-token cumulative trajectory favored Q1 for all 15 speakers. K8 still
+  remained worse than original audio for 14 speakers.
+- Non-native individual Q2–Q8 reconstruction remains excluded. Concatenation
+  baselines, utterance-adaptive gating, pathology-aware objectives, and
+  cross-codec replication remain pending unless explicitly stated otherwise
+  in the canonical roadmap.
 
 WER and CER are ASR performance metrics. They are not clinical intelligibility
 scores. Dysarthria- or severity-associated probes are not clinical diagnostic

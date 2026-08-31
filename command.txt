@@ -27,3 +27,15 @@ for Rotation in rotation_04_test_d rotation_05_test_e; do
   Count="$(find "$Root" -type f -name results.json 2>/dev/null | wc -l)"
   printf '%s\t%s/24\n' "$Rotation" "$Count"
 done
+
+python codec_reconstruction/reconstruct_speechtokenizer_prefixes.py \
+  --input-mode audio \
+  --manifest "$ManifestFile" \
+  --audio-root "$AudioRoot" \
+  --output-dir  "/data/TORGO_SPEECKTOKENIZER"\
+  --config "$STConfig" \
+  --checkpoint "$STCheckpoint" \
+  --layers 8 \
+  --split all \
+  --device cuda \
+  2>&1 | tee "${ReconRoot}_run.log"
