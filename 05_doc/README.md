@@ -13,7 +13,7 @@ motivation. It is not the final research contribution.
 | Document | Status | Purpose |
 |---|---|---|
 | [Pathology-aware RVQ fusion roadmap](PATHOLOGY_AWARE_RVQ_FUSION_ROADMAP.md) | canonical | Current research questions, Stage 0–9 roadmap, experiment matrix, decision gates, and success criteria. |
-| [Phase 1 conclusion](01_conclution.md) | completed trajectory record | Preserves the fixed-split pilot and formal seven-fold cumulative/individual SpeechTokenizer results. |
+| [Phase 1 conclusion](01_conclusion.md) | completed pilot record | Preserves the fixed-split SpeechTokenizer Q1–Q8 results and their representation audit. |
 | [Dataset protocol amendment](01_dataset_modify.md) | partially completed protocol | Records mild-speaker inclusion, seven cyclic speaker folds, audit status, and remaining evaluation work. |
 | [Stage overview](00_Stage_target.md) | revised index | Maps the superseded Stage 1–9 plan to the current Stage 0–9 roadmap. |
 | [Manifest/Phase 1 specification](01_Manifest_pre.md) | historical, completed | Original Phase 1 implementation request. |

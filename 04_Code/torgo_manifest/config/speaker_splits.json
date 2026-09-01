@@ -1,6 +1,0 @@
-{
-  "description": "Fixed speaker-independent development split; review severity balance after filling official metadata.",
-  "train": ["F01", "M01", "M02", "M03", "FC01", "MC01", "MC02"],
-  "valid": ["F03", "M04", "FC02", "MC03"],
-  "test": ["F04", "M05", "FC03", "MC04"]
-}

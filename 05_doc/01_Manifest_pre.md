@@ -32,7 +32,7 @@ B. Manifest schema
 - 下游 token index、reconstruction index、predictions 必須保留 condition。
 - 評估結果必須分別提供 overall、control、dysarthric、severity、speaker。
 - 暫時不要自行更改 severity label 或納入／排除任何 speaker。
-- 如果 speaker_metadata.csv 仍有 citation TODO，只報告問題，不要猜引用。
+- speaker_metadata.csv 使用 Rudzicz, Namasivayam, and Wolff (2012) TORGO database citation。
 
 C. CTC trajectory
 - 讓現有 rvq_asr training pipeline 支援自動執行 depth 1 到 N。

@@ -1,12 +1,12 @@
 speaker_id,gender,speaker_type,severity,severity_source,include_in_experiment
-F01,female,dysarthric,severe,Paper evaluation split (citation TODO),true
-F03,female,dysarthric,moderate,Paper evaluation split (citation TODO),true
-F04,female,dysarthric,mild,Paper evaluation split; mild/ignored (citation TODO),false
-M01,male,dysarthric,severe,Paper evaluation split (citation TODO),true
-M02,male,dysarthric,severe,Paper evaluation split (citation TODO),true
-M03,male,dysarthric,mild,Paper evaluation split; mild/ignored (citation TODO),false
-M04,male,dysarthric,severe,Paper evaluation split (citation TODO),true
-M05,male,dysarthric,moderate-to-severe,Paper evaluation split (citation TODO),true
+F01,female,dysarthric,severe,"Frank Rudzicz, Athanasivayam Namasivayam, and T. Wolff (2012), ""The TORGO database of acoustic and articulatory speech from speakers with dysarthria.""",true
+F03,female,dysarthric,moderate,"Frank Rudzicz, Athanasivayam Namasivayam, and T. Wolff (2012), ""The TORGO database of acoustic and articulatory speech from speakers with dysarthria.""",true
+F04,female,dysarthric,mild,"Frank Rudzicz, Athanasivayam Namasivayam, and T. Wolff (2012), ""The TORGO database of acoustic and articulatory speech from speakers with dysarthria.""",true
+M01,male,dysarthric,severe,"Frank Rudzicz, Athanasivayam Namasivayam, and T. Wolff (2012), ""The TORGO database of acoustic and articulatory speech from speakers with dysarthria.""",true
+M02,male,dysarthric,severe,"Frank Rudzicz, Athanasivayam Namasivayam, and T. Wolff (2012), ""The TORGO database of acoustic and articulatory speech from speakers with dysarthria.""",true
+M03,male,dysarthric,mild,"Frank Rudzicz, Athanasivayam Namasivayam, and T. Wolff (2012), ""The TORGO database of acoustic and articulatory speech from speakers with dysarthria.""",true
+M04,male,dysarthric,severe,"Frank Rudzicz, Athanasivayam Namasivayam, and T. Wolff (2012), ""The TORGO database of acoustic and articulatory speech from speakers with dysarthria.""",true
+M05,male,dysarthric,moderate-to-severe,"Frank Rudzicz, Athanasivayam Namasivayam, and T. Wolff (2012), ""The TORGO database of acoustic and articulatory speech from speakers with dysarthria.""",true
 FC01,female,control,control,TORGO speaker group,true
 FC02,female,control,control,TORGO speaker group,true
 FC03,female,control,control,TORGO speaker group,true

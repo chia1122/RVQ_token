@@ -9,7 +9,7 @@
 開始前先進行資料可行性檢查，暫時不要修改程式：
 1. 列出所有 dysarthric speakers 及其 severity。
 2. 列出每個 severity 的 speaker 數、utterance 數與時數。
-3. 檢查 severity_source 是否仍有 citation TODO。
+3. 檢查 severity_source 是否保留 Rudzicz, Namasivayam, and Wolff (2012) TORGO database citation。
 4. 檢查 mild speakers 是否被排除。
 5. 判斷四分類是否具有最低可行性。
 

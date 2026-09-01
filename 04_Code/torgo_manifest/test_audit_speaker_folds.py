@@ -20,9 +20,8 @@ from build_torgo_manifest import load_speaker_metadata
 
 
 MODULE_DIR = Path(__file__).resolve().parent
-CANONICAL_METADATA_PATH = MODULE_DIR / "config" / "speaker_metadata.csv"
-METADATA_PATH = MODULE_DIR / "config" / "speaker_metadata_including_mild_v1.csv"
-FOLD_CONFIG_PATH = MODULE_DIR / "config" / "speaker_folds_including_mild_v1.json"
+METADATA_PATH = MODULE_DIR / "config" / "speaker_metadata.csv"
+FOLD_CONFIG_PATH = MODULE_DIR / "config" / "speaker_folds.json"
 
 
 class SpeakerFoldConfigTest(unittest.TestCase):
@@ -59,27 +58,12 @@ class SpeakerFoldConfigTest(unittest.TestCase):
         self.assertNotIn({"female"}, gender_sets)
         self.assertEqual(gender_sets.count({"male"}), 1)
 
-    def test_versioned_metadata_changes_only_mild_protocol_fields(self):
-        canonical = load_speaker_metadata(CANONICAL_METADATA_PATH)
-        self.assertEqual(set(canonical), set(self.metadata))
-        for speaker in canonical:
-            if speaker not in {"F04", "M03"}:
-                self.assertEqual(canonical[speaker], self.metadata[speaker])
-                continue
-            self.assertEqual(canonical[speaker]["severity"], "mild")
+    def test_canonical_metadata_includes_mild_speakers(self):
+        self.assertEqual(len(self.metadata), 15)
+        for speaker in ("F04", "M03"):
             self.assertEqual(self.metadata[speaker]["severity"], "mild")
-            self.assertEqual(canonical[speaker]["speaker_type"], "dysarthric")
             self.assertEqual(self.metadata[speaker]["speaker_type"], "dysarthric")
-            self.assertEqual(canonical[speaker]["include_in_experiment"], "false")
             self.assertEqual(self.metadata[speaker]["include_in_experiment"], "true")
-            differing = {
-                field
-                for field in canonical[speaker]
-                if canonical[speaker][field] != self.metadata[speaker][field]
-            }
-            self.assertEqual(
-                differing, {"severity_source", "include_in_experiment"}
-            )
 
     def test_required_mild_speakers_are_asserted(self):
         invalid = copy.deepcopy(self.metadata)

@@ -1,0 +1,95 @@
+/home/rachel/.conda/envs/audio_codec/lib/python3.9/site-packages/torch/nn/utils/weight_norm.py:143: FutureWarning: `torch.nn.utils.weight_norm` is deprecated in favor of `torch.nn.utils.parametrizations.weight_norm`.
+/home/rachel/.conda/envs/audio_codec/lib/python3.9/site-packages/torch/nn/utils/weight_norm.py:143: FutureWarning: `torch.nn.utils.weight_norm` is deprecated in favor of `torch.nn.utils.parametrizations.weight_norm`.
+  WeightNorm.apply(module, name, dim)
+/home/rachel/06_opensource_toolkit/SpeechTokenizer/speechtokenizer/model.py:75: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  params = torch.load(ckpt_path, map_location='cpu')
+Processed 100/7785; wavs=100; failures=0
+Processed 200/7785; wavs=200; failures=0
+Processed 300/7785; wavs=300; failures=0
+Processed 400/7785; wavs=400; failures=0
+Processed 500/7785; wavs=500; failures=0
+Processed 600/7785; wavs=600; failures=0
+Processed 700/7785; wavs=700; failures=0
+Processed 800/7785; wavs=800; failures=0
+Processed 900/7785; wavs=900; failures=0
+Processed 1000/7785; wavs=1000; failures=0
+Processed 1100/7785; wavs=1100; failures=0
+Processed 1200/7785; wavs=1200; failures=0
+Processed 1300/7785; wavs=1300; failures=0
+Processed 1400/7785; wavs=1400; failures=0
+Processed 1500/7785; wavs=1500; failures=0
+Processed 1600/7785; wavs=1600; failures=0
+Processed 1700/7785; wavs=1700; failures=0
+Processed 1800/7785; wavs=1800; failures=0
+Processed 1900/7785; wavs=1900; failures=0
+Processed 2000/7785; wavs=2000; failures=0
+Processed 2100/7785; wavs=2100; failures=0
+Processed 2200/7785; wavs=2200; failures=0
+Processed 2300/7785; wavs=2300; failures=0
+Processed 2400/7785; wavs=2400; failures=0
+Processed 2500/7785; wavs=2500; failures=0
+Processed 2600/7785; wavs=2600; failures=0
+Processed 2700/7785; wavs=2700; failures=0
+Processed 2800/7785; wavs=2800; failures=0
+Processed 2900/7785; wavs=2900; failures=0
+Processed 3000/7785; wavs=3000; failures=0
+Processed 3100/7785; wavs=3100; failures=0
+Processed 3200/7785; wavs=3200; failures=0
+Processed 3300/7785; wavs=3300; failures=0
+Processed 3400/7785; wavs=3400; failures=0
+Processed 3500/7785; wavs=3500; failures=0
+Processed 3600/7785; wavs=3600; failures=0
+Processed 3700/7785; wavs=3700; failures=0
+Processed 3800/7785; wavs=3800; failures=0
+Processed 3900/7785; wavs=3900; failures=0
+Processed 4000/7785; wavs=4000; failures=0
+Processed 4100/7785; wavs=4100; failures=0
+Processed 4200/7785; wavs=4200; failures=0
+Processed 4300/7785; wavs=4300; failures=0
+Processed 4400/7785; wavs=4400; failures=0
+Processed 4500/7785; wavs=4500; failures=0
+Processed 4600/7785; wavs=4600; failures=0
+Processed 4700/7785; wavs=4700; failures=0
+Processed 4800/7785; wavs=4800; failures=0
+Processed 4900/7785; wavs=4900; failures=0
+Processed 5000/7785; wavs=5000; failures=0
+Processed 5100/7785; wavs=5100; failures=0
+Processed 5200/7785; wavs=5200; failures=0
+Processed 5300/7785; wavs=5300; failures=0
+Processed 5400/7785; wavs=5400; failures=0
+Processed 5500/7785; wavs=5500; failures=0
+Processed 5600/7785; wavs=5600; failures=0
+Processed 5700/7785; wavs=5700; failures=0
+Processed 5800/7785; wavs=5800; failures=0
+Processed 5900/7785; wavs=5900; failures=0
+Processed 6000/7785; wavs=6000; failures=0
+Processed 6100/7785; wavs=6100; failures=0
+Processed 6200/7785; wavs=6200; failures=0
+Processed 6300/7785; wavs=6300; failures=0
+Processed 6400/7785; wavs=6400; failures=0
+Processed 6500/7785; wavs=6500; failures=0
+Processed 6600/7785; wavs=6600; failures=0
+Processed 6700/7785; wavs=6700; failures=0
+Processed 6800/7785; wavs=6800; failures=0
+Processed 6900/7785; wavs=6900; failures=0
+Processed 7000/7785; wavs=7000; failures=0
+Processed 7100/7785; wavs=7100; failures=0
+Processed 7200/7785; wavs=7200; failures=0
+Processed 7300/7785; wavs=7300; failures=0
+Processed 7400/7785; wavs=7400; failures=0
+Processed 7500/7785; wavs=7500; failures=0
+Processed 7600/7785; wavs=7600; failures=0
+Processed 7700/7785; wavs=7700; failures=0
+Processed 7785/7785; wavs=7785; failures=0
+{
+  "utterances": 7785,
+  "layers": [
+    8
+  ],
+  "wav_files": 7785,
+  "failures": 0,
+  "codec_model": "speechtokenizer_hubert_avg",
+  "sample_rate": 16000,
+  "split": "all",
+  "input_mode": "audio"
+}

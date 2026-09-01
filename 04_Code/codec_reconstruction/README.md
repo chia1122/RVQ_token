@@ -121,7 +121,7 @@ Then reconstruct one test utterance:
 python 04_Code/codec_reconstruction/reconstruct_dac_prefixes.py \
   --token-index 04_Code/torgo_manifest/dac_tokens_24khz/tokens.jsonl \
   --token-root 04_Code/torgo_manifest/dac_tokens_24khz \
-  --manifest 04_Code/torgo_manifest/output/torgo_all.jsonl \
+  --manifest $MANIFEST_ROOT/torgo_all.jsonl \
   --audio-root /data/TORGO \
   --output-dir 04_Code/codec_reconstruction/outputs/dac_smoke \
   --layers 1,2,3,4,5,6,7,8 \
@@ -135,7 +135,7 @@ Evaluate Original and all DAC prefixes with the same ASR:
 
 ```bash
 python 04_Code/codec_reconstruction/evaluate_with_faster_whisper.py \
-  --manifest 04_Code/torgo_manifest/output/torgo_all.jsonl \
+  --manifest $MANIFEST_ROOT/torgo_all.jsonl \
   --audio-root /data/TORGO \
   --reconstruction-index 04_Code/codec_reconstruction/outputs/dac_smoke/reconstruction_index.jsonl \
   --reconstruction-root 04_Code/codec_reconstruction/outputs/dac_smoke \
@@ -171,7 +171,7 @@ may download the selected ASR checkpoint.
 python 04_Code/codec_reconstruction/reconstruct_encodec_prefixes.py \
   --token-index 04_Code/torgo_manifest/encodec_tokens_24khz_6kbps/tokens.jsonl \
   --token-root 04_Code/torgo_manifest/encodec_tokens_24khz_6kbps \
-  --manifest 04_Code/torgo_manifest/output/torgo_all.jsonl \
+  --manifest $MANIFEST_ROOT/torgo_all.jsonl \
   --audio-root /data/TORGO \
   --output-dir 04_Code/codec_reconstruction/outputs/encodec_smoke \
   --layers 1,2,3,4,5,6,7,8 \
@@ -189,7 +189,7 @@ the source duration.
 
 ```bash
 python 04_Code/codec_reconstruction/evaluate_with_faster_whisper.py \
-  --manifest 04_Code/torgo_manifest/output/torgo_all.jsonl \
+  --manifest $MANIFEST_ROOT/torgo_all.jsonl \
   --audio-root /data/TORGO \
   --reconstruction-index 04_Code/codec_reconstruction/outputs/encodec_smoke/reconstruction_index.jsonl \
   --reconstruction-root 04_Code/codec_reconstruction/outputs/encodec_smoke \
@@ -216,7 +216,7 @@ for a frozen pretrained ASR evaluation because no TORGO samples train the ASR.
 python 04_Code/codec_reconstruction/reconstruct_encodec_prefixes.py \
   --token-index 04_Code/torgo_manifest/encodec_tokens_24khz_6kbps/tokens.jsonl \
   --token-root 04_Code/torgo_manifest/encodec_tokens_24khz_6kbps \
-  --manifest 04_Code/torgo_manifest/output/torgo_all.jsonl \
+  --manifest $MANIFEST_ROOT/torgo_all.jsonl \
   --audio-root /data/TORGO \
   --output-dir 04_Code/codec_reconstruction/outputs/encodec_24khz_6kbps \
   --layers 1,2,3,4,5,6,7,8 \
@@ -224,14 +224,14 @@ python 04_Code/codec_reconstruction/reconstruct_encodec_prefixes.py \
   --device cuda
 ```
 
-Expected output count is `7140 x 8 = 57120` WAV files. Rerunning the command
+Expected output count is `7785 x 8 = 62280` WAV files. Rerunning the command
 reuses existing WAV files unless `--overwrite` is supplied.
 
 ## 5. Full pretrained-ASR evaluation
 
 ```bash
 python 04_Code/codec_reconstruction/evaluate_with_faster_whisper.py \
-  --manifest 04_Code/torgo_manifest/output/torgo_all.jsonl \
+  --manifest $MANIFEST_ROOT/torgo_all.jsonl \
   --audio-root /data/TORGO \
   --reconstruction-index 04_Code/codec_reconstruction/outputs/encodec_24khz_6kbps/reconstruction_index.jsonl \
   --reconstruction-root 04_Code/codec_reconstruction/outputs/encodec_24khz_6kbps \
@@ -273,7 +273,7 @@ filter. Reconstruct all enrolled Severe speakers:
 python 04_Code/codec_reconstruction/reconstruct_dac_prefixes.py \
   --token-index 04_Code/torgo_manifest/dac_tokens_24khz/tokens.jsonl \
   --token-root 04_Code/torgo_manifest/dac_tokens_24khz \
-  --manifest 04_Code/torgo_manifest/output/torgo_all.jsonl \
+  --manifest $MANIFEST_ROOT/torgo_all.jsonl \
   --audio-root /data/TORGO \
   --output-dir 04_Code/codec_reconstruction/outputs/dac_severe \
   --layers 1,2,3,4,5,6,7,8 \
@@ -287,7 +287,7 @@ Run the fixed pretrained ASR on Original and every prefix:
 
 ```bash
 python 04_Code/codec_reconstruction/evaluate_with_faster_whisper.py \
-  --manifest 04_Code/torgo_manifest/output/torgo_all.jsonl \
+  --manifest $MANIFEST_ROOT/torgo_all.jsonl \
   --audio-root /data/TORGO \
   --reconstruction-index 04_Code/codec_reconstruction/outputs/dac_severe/reconstruction_index.jsonl \
   --reconstruction-root 04_Code/codec_reconstruction/outputs/dac_severe \

@@ -450,164 +450,35 @@ GPU execution is recommended for codec extraction, reconstruction, ASR evaluatio
 
 ## TORGO
 
-The TORGO audio root should directly contain speaker directories such as:
+The canonical dataset protocol is the 15-speaker, seven-rotation
+`torgo_including_mild_v1` protocol. Its versioned source files are:
 
 ```text
-/data/TORGO/
-├── F01/
-├── F03/
-├── F04/
-├── M01/
-├── M02/
-├── M03/
-├── M04/
-├── M05/
-└── ...
+04_Code/torgo_manifest/config/speaker_metadata.csv
+04_Code/torgo_manifest/config/speaker_folds.json
 ```
 
-The manifest builder also expects the TORGO transcript/index CSV used by the project.
-
-Before generating the final manifest, review:
-
-```text
-torgo_manifest/config/speaker_metadata.csv
-torgo_manifest/config/speaker_splits.json
-```
-
-See `torgo_manifest/README.md` for the expected metadata and split configuration.
+Generate and validate all speaker-disjoint rotations before building manifests.
+See `04_Code/torgo_manifest/README.md` for exact commands. The removed
+13-speaker fixed split must not be used for new experiments.
 
 ## LibriSpeech
 
-For pretraining:
-
-```text
-/data/LibriSpeech/
-├── train-clean-100/
-├── dev-clean/
-└── test-clean/
-```
-
-Official LibriSpeech `*.trans.txt` annotations are used to build the manifest.
+LibriSpeech remains available for historical ASR pretraining workflows. It is
+not part of the individual-codebook probe milestone.
 
 ## UA-Speech
 
-UA-Speech is used only by the standalone:
-
-```text
-benchmark_UA_auto.py
-```
-
-The input and output directories are currently configured directly inside that script.
+UA-Speech remains available to `benchmark_UA_auto.py`; it is not part of the
+current TORGO probe protocol.
 
 ---
 
-# 6. Recommended Execution Order
+# 6. Existing analysis workflows
 
-For a new environment, run the project in the following order.
-
-### Step 1 — Prepare TORGO manifest
-
-```bash
-python torgo_manifest/build_torgo_manifest.py \
-    --index PATH_TO_TORGO_INDEX/torgo.csv \
-    --audio-root /data/TORGO \
-    --speaker-metadata torgo_manifest/config/speaker_metadata.csv \
-    --split-config torgo_manifest/config/speaker_splits.json \
-    --output-dir torgo_manifest/output
-```
-
-Check the generated manifest before continuing.
-
-### Step 2 — Extract codec tokens
-
-Choose one codec.
-
-For DAC:
-
-```bash
-python torgo_manifest/extract_dac_tokens.py \
-    --manifest torgo_manifest/output/torgo_all.jsonl \
-    --audio-root /data/TORGO \
-    --output-dir torgo_manifest/dac_tokens_24khz \
-    --model 24khz \
-    --device cuda
-```
-
-The extraction output should contain a token index and extraction summary.
-
-### Step 3 — Reconstruct RVQ prefixes
-
-Example using DAC:
-
-```bash
-python codec_reconstruction/reconstruct_dac_prefixes.py \
-    --token-index torgo_manifest/dac_tokens_24khz/tokens.jsonl \
-    --token-root torgo_manifest/dac_tokens_24khz \
-    --manifest torgo_manifest/output/torgo_all.jsonl \
-    --audio-root /data/TORGO \
-    --output-dir codec_reconstruction/outputs/dac_smoke \
-    --layers 1,2,3,4,5,6,7,8 \
-    --model 24khz \
-    --split test \
-    --limit 1 \
-    --device cuda
-```
-
-Always perform a small smoke test before processing the entire dataset.
-
-### Step 4 — Evaluate reconstructed audio
-
-```bash
-python codec_reconstruction/evaluate_with_faster_whisper.py \
-    --manifest torgo_manifest/output/torgo_all.jsonl \
-    --audio-root /data/TORGO \
-    --reconstruction-index codec_reconstruction/outputs/dac_smoke/reconstruction_index.jsonl \
-    --reconstruction-root codec_reconstruction/outputs/dac_smoke \
-    --output-dir codec_reconstruction/asr_results/dac_smoke_large_v3 \
-    --conditions auto \
-    --split test \
-    --limit-per-condition 1 \
-    --model large-v3 \
-    --language en \
-    --beam-size 5 \
-    --device cuda \
-    --compute-type float16
-```
-
-After confirming that the smoke test works, remove the limits and use a separate output directory for the full run.
-
-### Step 5 — Run the complete CTC depth trajectory
-
-Expose `04_Code` on `PYTHONPATH`, then use the sweep entry point. It discovers
-the actual number of codebooks, rejects unavailable depths, and gives every
-codec/depth/seed combination an independent output directory.
-
-```powershell
-$env:PYTHONPATH="$PWD/04_Code"
-python -m rvq_asr.sweep_depths `
-  --token-index 04_Code/torgo_manifest/speechtokenizer_hubert_avg_tokens/tokens.jsonl `
-  --token-root 04_Code/torgo_manifest/speechtokenizer_hubert_avg_tokens `
-  --output-root 04_Code/rvq_asr/trajectories/phase1 `
-  --codec speechtokenizer `
-  --depths auto `
-  --seeds 1337,2026,3407 `
-  -- `
-  --epochs 30 `
-  --batch-size 16 `
-  --model-dim 256 `
-  --encoder-layers 4 `
-  --heads 4 `
-  --feedforward-dim 1024 `
-  --learning-rate 3e-4 `
-  --weight-decay 1e-2 `
-  --time-reduction 4 `
-  --subsampling conv `
-  --device cuda
-```
-
-The sweep writes `trajectory_long.csv`, `trajectory_summary.csv`, and
-`sweep_runs.csv`. WER/CER trajectories are ASR performance measures and must
-not be presented as clinical intelligibility measurements.
+The cumulative ASR trajectory below is retained as historical tooling. The
+current milestone evaluates frozen codec-native individual Q1--Q8
+representations and must not launch cumulative or adaptive-fusion experiments.
 
 ### Step 6 — Aggregate seven speaker-fold rotations
 

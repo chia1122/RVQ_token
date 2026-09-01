@@ -49,8 +49,8 @@ F04、M03 的 severity 與 inclusion 依據已由研究者確認來自 TORGO 原
 不得直接覆蓋 Phase 1 使用的 manifest 與 outputs。建議新增 versioned resources：
 
 ```text
-04_Code/torgo_manifest/config/speaker_metadata_including_mild_v1.csv
-04_Code/torgo_manifest/config/speaker_folds_including_mild_v1.json
+04_Code/torgo_manifest/config/speaker_metadata.csv
+04_Code/torgo_manifest/config/speaker_folds.json
 04_Code/torgo_manifest/output_including_mild_v1/
 ```
 
@@ -297,8 +297,8 @@ WER/CER 僅作 ASR performance 指標，不作 clinical intelligibility 解讀�
 Fold-definition and audit stage 已新增：
 
 ```text
-04_Code/torgo_manifest/config/speaker_metadata_including_mild_v1.csv
-04_Code/torgo_manifest/config/speaker_folds_including_mild_v1.json
+04_Code/torgo_manifest/config/speaker_metadata.csv
+04_Code/torgo_manifest/config/speaker_folds.json
 04_Code/torgo_manifest/audit_speaker_folds.py
 04_Code/torgo_manifest/test_audit_speaker_folds.py
 ```

@@ -1,146 +1,65 @@
-# TORGO manifest builder
+# TORGO seven-rotation protocol
 
-This tool converts the existing TORGO CSV index into normalized, speaker-independent JSONL manifests.
+This directory builds and validates speaker-disjoint TORGO manifests. The
+canonical protocol is `torgo_including_mild_v1`: 15 speakers (eight
+dysarthric and seven control) assigned to seven folds. For each rotation, the
+current fold is test, the next fold is validation, and the remaining five
+folds are train.
 
-## Before the final build
-
-1. Put the official TORGO audio somewhere accessible. The audio root must directly contain `F01/`, `F03/`, `M01/`, and the other speaker directories.
-2. Replace the `citation TODO` text in `config/speaker_metadata.csv` with the paper/table citation used for the severity labels.
-3. Review `config/speaker_splits.json`. It is speaker-disjoint, but the small number of speakers prevents every severity from appearing in every split.
-
-The current paper-based protocol labels `F01`, `M01`, `M02`, and `M04` as severe; `M05` as moderate-to-severe; `F03` as moderate; and `F04`/`M03` as mild/ignored. The latter two have `include_in_experiment=false`, so their selected-channel recordings are retained in the exclusion audit but omitted from the ASR manifests.
-
-## Versioned protocol including mild speakers
-
-The original metadata and fixed split remain available for Phase 1
-reproducibility. A separate protocol includes the two TORGO mild speakers F04
-and M03 without changing their severity labels:
+The only canonical protocol sources are:
 
 ```text
-config/speaker_metadata_including_mild_v1.csv
-config/speaker_folds_including_mild_v1.json
+config/speaker_metadata.csv
+config/speaker_folds.json
 ```
 
-This protocol contains 15 speakers: eight dysarthric and seven control. It uses
-seven speaker folds, with every included speaker appearing in exactly one fold.
-For each rotation, the current fold is test, the next fold is validation, and
-the other five folds are train. Every fold contains both speech conditions.
+The earlier 13-speaker fixed split and its generated manifests were removed.
+Historical pilot results may remain in research records, but must not be used
+for new probe comparisons.
 
-Run a config-only audit from the repository root. This requires no TORGO audio,
-manifest, codec checkpoint, or GPU:
+## Validate and generate all rotations
+
+Run from the repository root:
 
 ```bash
+export PYTHONDONTWRITEBYTECODE=1
+export RVQ_ARTIFACT_ROOT="${RVQ_ARTIFACT_ROOT:-$HOME/rvq_token_artifacts}"
+export PROTOCOL_ROOT="$RVQ_ARTIFACT_ROOT/protocols/torgo_including_mild_v1"
+
+test ! -e "$PROTOCOL_ROOT"
 python 04_Code/torgo_manifest/audit_speaker_folds.py \
-  --speaker-metadata \
-    04_Code/torgo_manifest/config/speaker_metadata_including_mild_v1.csv \
-  --fold-config \
-    04_Code/torgo_manifest/config/speaker_folds_including_mild_v1.json \
-  --output-dir /tmp/torgo_fold_config_audit_v1
+  --speaker-metadata 04_Code/torgo_manifest/config/speaker_metadata.csv \
+  --fold-config 04_Code/torgo_manifest/config/speaker_folds.json \
+  --output-dir "$PROTOCOL_ROOT"
 ```
 
-The audit refuses to overwrite a non-empty output directory. Use a fresh
-directory for each audit. It writes:
+The audit writes `fold_audit.json` and seven
+`generated_splits/rotation_*.json` files. It rejects duplicate, missing, or
+overlapping speakers. Each generated split is accepted by
+`build_torgo_manifest.py`.
 
-```text
-fold_audit.json
-generated_splits/rotation_01_test_a.json
-generated_splits/rotation_02_test_b.json
-...
-generated_splits/rotation_07_test_g.json
-```
+## Build a rotation manifest
 
-Each generated split is compatible with `build_torgo_manifest.py`. Do not use
-the original Phase 1 manifest for a full mild-speaker audit: it lacks F04 and
-M03, and older generated copies may also predate the explicit `condition`
-schema. The auditor will reject either mismatch. First build a new manifest in
-a separate, versioned output directory using the versioned metadata and one of
-the generated split configs.
-
-After the new manifest has been built, audit its utterance/hour coverage and
-prompt overlap with a new output directory:
+Use the same metadata and one generated split. Example for rotation 01:
 
 ```bash
-python 04_Code/torgo_manifest/audit_speaker_folds.py \
-  --speaker-metadata \
-    04_Code/torgo_manifest/config/speaker_metadata_including_mild_v1.csv \
-  --fold-config \
-    04_Code/torgo_manifest/config/speaker_folds_including_mild_v1.json \
-  --manifest \
-    04_Code/torgo_manifest/output_including_mild_v1/torgo_all.jsonl \
-  --excluded-samples \
-    04_Code/torgo_manifest/output_including_mild_v1/excluded_samples.csv \
-  --output-dir /tmp/torgo_fold_manifest_audit_v1
-```
-
-Manifest-aware mode additionally writes `fold_statistics.csv` and
-`prompt_overlap.csv`. The primary protocol is speaker-disjoint but permits
-prompt overlap and audits it explicitly. Severity results remain descriptive:
-moderate and moderate-to-severe each contain only one speaker. WER and CER are
-ASR performance metrics and must not be presented as clinical intelligibility.
-
-## Draft build without audio
-
-Run from the repository root (the directory containing both `04_Code/` and
-`TORGO_Transcript/`).
-
-Linux Bash:
-
-```bash
-test -f 04_Code/torgo_manifest/build_torgo_manifest.py
-test -f TORGO_Transcript/torgo.csv
+export ROTATION_ID=rotation_01_test_a
+export MANIFEST_ROOT="$RVQ_ARTIFACT_ROOT/manifests/torgo_including_mild_v1/$ROTATION_ID"
 
 python 04_Code/torgo_manifest/build_torgo_manifest.py \
   --index TORGO_Transcript/torgo.csv \
   --audio-root /data/TORGO \
   --speaker-metadata 04_Code/torgo_manifest/config/speaker_metadata.csv \
-  --split-config 04_Code/torgo_manifest/config/speaker_splits.json \
-  --output-dir 04_Code/torgo_manifest/output_draft \
-  --allow-missing-audio
+  --split-config "$PROTOCOL_ROOT/generated_splits/$ROTATION_ID.json" \
+  --output-dir "$MANIFEST_ROOT"
 ```
 
-PowerShell:
+The builder selects `headMic` by default, rejects unusable transcripts,
+checks unique utterance/audio IDs, and independently asserts speaker
+disjointness. Outputs include `torgo_all.jsonl`, one JSONL per split,
+`excluded_samples.csv`, `dataset_statistics.csv`, and `build_audit.json`.
 
-```powershell
-python 04_Code/torgo_manifest/build_torgo_manifest.py `
-  --index TORGO_Transcript/torgo.csv `
-  --audio-root C:/path/to/TORGO `
-  --speaker-metadata 04_Code/torgo_manifest/config/speaker_metadata.csv `
-  --split-config 04_Code/torgo_manifest/config/speaker_splits.json `
-  --output-dir 04_Code/torgo_manifest/output_draft `
-  --allow-missing-audio
-```
-
-## Final build
-
-Remove `--allow-missing-audio`. Missing or invalid audio is then recorded in `excluded_samples.csv` and cannot silently enter a manifest.
-
-Linux Bash:
-
-```bash
-python 04_Code/torgo_manifest/build_torgo_manifest.py \
-  --index TORGO_Transcript/torgo.csv \
-  --audio-root /data/TORGO \
-  --speaker-metadata 04_Code/torgo_manifest/config/speaker_metadata.csv \
-  --split-config 04_Code/torgo_manifest/config/speaker_splits.json \
-  --output-dir 04_Code/torgo_manifest/output
-```
-
-PowerShell:
-
-```powershell
-python 04_Code/torgo_manifest/build_torgo_manifest.py `
-  --index TORGO_Transcript/torgo.csv `
-  --audio-root D:/datasets/TORGO `
-  --speaker-metadata 04_Code/torgo_manifest/config/speaker_metadata.csv `
-  --split-config 04_Code/torgo_manifest/config/speaker_splits.json `
-  --output-dir 04_Code/torgo_manifest/output
-```
-
-The builder selects only `headMic` by default, ignores the old utterance-level `test_data` field, rejects unintelligible transcripts, checks unique utterance/audio IDs, and asserts that speakers do not cross splits. Numeric transcripts are explicitly excluded instead of being silently corrupted; the current CSV contains one such selected-channel row (`FEBRUARY 13TH`). Add a documented number-expansion policy before retaining it.
-
-Outputs include `torgo_all.jsonl`, one JSONL per split, `excluded_samples.csv`, `dataset_statistics.csv`, and `build_audit.json`. Every manifest row contains an explicit `condition` value (`control` or `dysarthric`); token indexes and downstream predictions preserve this field.
-
-Run tests with Bash or PowerShell:
+Run manifest tests with:
 
 ```bash
 python -m unittest discover -s 04_Code/torgo_manifest -p "test_*.py"
@@ -241,11 +160,11 @@ python -c "import torch, torchaudio, encodec; print(torch.__version__, torch.cud
 First perform a one-utterance smoke test:
 
 ```bash
-head -n 1 04_Code/torgo_manifest/output/torgo_all.jsonl \
-  > 04_Code/torgo_manifest/output/smoke.jsonl
+head -n 1 "$MANIFEST_ROOT/torgo_all.jsonl" \
+  > /tmp/torgo_smoke.jsonl
 
 python 04_Code/torgo_manifest/extract_encodec_tokens.py \
-  --manifest 04_Code/torgo_manifest/output/smoke.jsonl \
+  --manifest /tmp/torgo_smoke.jsonl \
   --audio-root /data/TORGO \
   --output-dir 04_Code/torgo_manifest/encodec_tokens_smoke \
   --model encodec_24khz \
@@ -278,7 +197,7 @@ After the smoke test succeeds, run the full extraction:
 
 ```bash
 python 04_Code/torgo_manifest/extract_encodec_tokens.py \
-  --manifest 04_Code/torgo_manifest/output/torgo_all.jsonl \
+  --manifest "$MANIFEST_ROOT/torgo_all.jsonl" \
   --audio-root /data/TORGO \
   --output-dir 04_Code/torgo_manifest/encodec_tokens_24khz_6kbps \
   --model encodec_24khz \
@@ -314,7 +233,7 @@ sample rates remain recorded in each token file.
 
 ```bash
 python 04_Code/torgo_manifest/extract_dac_tokens.py \
-  --manifest 04_Code/torgo_manifest/output/smoke.jsonl \
+  --manifest /tmp/torgo_smoke.jsonl \
   --audio-root /data/TORGO \
   --output-dir 04_Code/torgo_manifest/dac_tokens_smoke \
   --model 24khz \
@@ -332,7 +251,7 @@ After the smoke test succeeds, run the full extraction:
 
 ```bash
 python 04_Code/torgo_manifest/extract_dac_tokens.py \
-  --manifest 04_Code/torgo_manifest/output/torgo_all.jsonl \
+  --manifest "$MANIFEST_ROOT/torgo_all.jsonl" \
   --audio-root /data/TORGO \
   --output-dir 04_Code/torgo_manifest/dac_tokens_24khz \
   --model 24khz \
@@ -443,6 +362,4 @@ length, so keep the same subsampling method and reduction factor in every
 codec/layer ablation. Use `--grad-accum-steps` when a smaller physical batch is
 needed, so experiments can retain the same effective batch size.
 
-The current fixed split is suitable for pipeline development but not the final
-severity claim because its test speakers do not cover every severity. Replace
-it with speaker-level cross-validation before reporting final probing results.
+The seven-rotation protocol is mandatory for formal results. A single rotation may be used only for development or smoke testing.
